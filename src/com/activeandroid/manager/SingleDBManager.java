@@ -143,7 +143,7 @@ public class SingleDBManager {
      * Adds all objects to the DB
      * @param objects
      */
-    public <OBJECT_CLASS extends Model> void addAll(ArrayList<OBJECT_CLASS> objects){
+    public <OBJECT_CLASS extends Model,LIST_CLASS extends List<OBJECT_CLASS>> void addAll(LIST_CLASS objects){
         ActiveAndroid.beginTransaction();
         try{
             for(OBJECT_CLASS object: objects){
@@ -192,7 +192,7 @@ public class SingleDBManager {
     }
 
 
-    public <OBJECT_CLASS extends Model> void addAllInBackground(final ArrayList<OBJECT_CLASS> objects, final Runnable finishedRunnable, String tag, int priority) {
+    public <OBJECT_CLASS extends Model, LIST_CLASS extends List<OBJECT_CLASS>> void addAllInBackground(final LIST_CLASS objects, final Runnable finishedRunnable, String tag, int priority) {
         processOnBackground(new DBRequest(priority, "add "+ tag) {
             @Override
             public void run() {
@@ -394,5 +394,15 @@ public class SingleDBManager {
      */
     public <OBJECT_CLASS extends Model> void deleteAll(Class<OBJECT_CLASS> obClazz){
         new Delete().from(obClazz).execute();
+    }
+
+    /**
+     * Deletes all objects from the list specified
+     * @param list - the list of model objects you wish to delete
+     */
+    public <OBJECT_CLASS extends Model, LIST_CLASS extends List<OBJECT_CLASS>> void deleteAll(LIST_CLASS list){
+        for(OBJECT_CLASS object: list){
+            object.delete();
+        }
     }
 }
