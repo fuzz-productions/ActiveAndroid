@@ -379,16 +379,99 @@ public class SingleDBManager {
     }
 
     /**
-     * Deletes an object from the db
-     * @param favoriteObject
+     * Deletes objects from the db
      * @param <OBJECT_CLASS>
      */
-    public void delete(Model favoriteObject) {
-        favoriteObject.delete();
+    public<OBJECT_CLASS extends Model> void deleteAll(OBJECT_CLASS...objects) {
+        ActiveAndroid.beginTransaction();
+        try{
+            for(OBJECT_CLASS object: objects){
+                object.delete();
+            }
+            ActiveAndroid.setTransactionSuccessful();
+        } finally {
+            ActiveAndroid.endTransaction();
+        }
     }
 
     /**
-     * Deletes all objects from the class specified
+     * Deletes objects from the db
+     * @param finishedRunnable
+     * @param tag
+     * @param priority
+     * @param objects
+     * @param <OBJECT_CLASS>
+     */
+    public<OBJECT_CLASS extends Model> void deleteAllInBackground(final Runnable finishedRunnable, String tag, int priority, final OBJECT_CLASS...objects) {
+        processOnBackground(new DBRequest(priority, tag) {
+            @Override
+            public void run() {
+                deleteAll(objects);
+                if(finishedRunnable!=null){
+                    finishedRunnable.run();
+                }
+            }
+        });
+    }
+
+    /**
+     * Deletes objects from the db
+     * @param finishedRunnable
+     * @param tag
+     * @param objects
+     * @param <OBJECT_CLASS>
+     */
+    public<OBJECT_CLASS extends Model> void deleteAllInBackground(final Runnable finishedRunnable, String tag, final OBJECT_CLASS...objects) {
+        processOnBackground(new DBRequest(DBRequest.PRIORITY_LOW, tag) {
+            @Override
+            public void run() {
+                deleteAll(objects);
+                if(finishedRunnable!=null){
+                    finishedRunnable.run();
+                }
+            }
+        });
+    }
+
+    /**
+     * Deletes objects from the db
+     * @param finishedRunnable
+     * @param priority
+     * @param objects
+     * @param <OBJECT_CLASS>
+     */
+    public<OBJECT_CLASS extends Model> void deleteAllInBackground(final Runnable finishedRunnable, int priority, final OBJECT_CLASS...objects) {
+        processOnBackground(new DBRequest(priority) {
+            @Override
+            public void run() {
+                deleteAll(objects);
+                if(finishedRunnable!=null){
+                    finishedRunnable.run();
+                }
+            }
+        });
+    }
+
+    /**
+     * Deletes objects from the db
+     * @param finishedRunnable
+     * @param objects
+     * @param <OBJECT_CLASS>
+     */
+    public<OBJECT_CLASS extends Model> void deleteAllInBackground(final Runnable finishedRunnable, final OBJECT_CLASS...objects) {
+        processOnBackground(new DBRequest() {
+            @Override
+            public void run() {
+                deleteAll(objects);
+                if(finishedRunnable!=null){
+                    finishedRunnable.run();
+                }
+            }
+        });
+    }
+
+    /**
+     * Deletes all objects from the specified table
      * @param obClazz
      * @param <OBJECT_CLASS>
      */
@@ -401,8 +484,14 @@ public class SingleDBManager {
      * @param list - the list of model objects you wish to delete
      */
     public <OBJECT_CLASS extends Model, LIST_CLASS extends List<OBJECT_CLASS>> void deleteAll(LIST_CLASS list){
-        for(OBJECT_CLASS object: list){
-            object.delete();
+        ActiveAndroid.beginTransaction();
+        try{
+            for(OBJECT_CLASS object: list){
+                object.delete();
+            }
+            ActiveAndroid.setTransactionSuccessful();
+        } finally {
+            ActiveAndroid.endTransaction();
         }
     }
 }
