@@ -121,6 +121,21 @@ public class SingleDBManager {
         });
     }
 
+    public <OBJECT_CLASS extends Model> void addInBackground(final OBJECT_CLASS object, final ObjectReceiver<OBJECT_CLASS> objectReceiver, DBRequestInfo dbRequestInfo){
+        processOnBackground(new DBRequest(dbRequestInfo) {
+            @Override
+            public void run() {
+                final OBJECT_CLASS ob = add(object);
+                processOnForeground(new Runnable() {
+                    @Override
+                    public void run() {
+                        objectReceiver.onObjectReceived(ob);
+                    }
+                });
+            }
+        });
+    }
+
     /**
      * Adds all objects to the DB
      * @param objects

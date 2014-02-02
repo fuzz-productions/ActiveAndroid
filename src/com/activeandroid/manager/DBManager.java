@@ -59,6 +59,16 @@ public abstract class DBManager<OBJECT_CLASS extends Model> extends SingleDBMana
     }
 
     /**
+     * Adds an object to the DB in the BG
+     * @param jsonObject
+     * @param objectReceiver
+     * @param dbRequestInfo
+     */
+    public void addInBackground(final JSONObject jsonObject, final ObjectReceiver<OBJECT_CLASS> objectReceiver, DBRequestInfo dbRequestInfo){
+        addInBackground(mObjectClass, jsonObject, objectReceiver, dbRequestInfo);
+    }
+
+    /**
      * Adds all objects from the passed jsonarray, may NOT be type-safe so be careful with this
      * @param array
      */
