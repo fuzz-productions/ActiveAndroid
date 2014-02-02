@@ -3,6 +3,7 @@ package com.activeandroid.runtime;
 import android.os.Looper;
 import android.os.Process;
 
+import java.util.Iterator;
 import java.util.concurrent.PriorityBlockingQueue;
 
 /**
@@ -82,6 +83,22 @@ public class DBRequestQueue extends Thread{
         synchronized (mQueue){
             if(mQueue.contains(runnable)){
                 mQueue.remove(runnable);
+            }
+        }
+    }
+
+    /**
+     * Cancels all requests by a specific tag
+     * @param tag
+     */
+    public void cancel(String tag){
+        synchronized (mQueue){
+            Iterator<DBRequest> it = mQueue.iterator();
+            while(it.hasNext()){
+                DBRequest next = it.next();
+                if(next.getName().equals(tag)){
+                    it.remove();
+                }
             }
         }
     }
