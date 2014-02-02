@@ -11,6 +11,7 @@ import com.activeandroid.query.Select;
 import com.activeandroid.interfaces.CollectionReceiver;
 import com.activeandroid.interfaces.ObjectReceiver;
 import com.activeandroid.runtime.DBRequest;
+import com.activeandroid.runtime.DBRequestInfo;
 import com.activeandroid.runtime.DBRequestQueue;
 import com.activeandroid.util.SQLiteUtils;
 
@@ -58,16 +59,6 @@ public abstract class DBManager<OBJECT_CLASS extends Model> extends SingleDBMana
     }
 
     /**
-     * Adds an object to the DB in the BG
-     * @param jsonObject
-     * @param objectReceiver
-     * @param priority
-     */
-    public void addInBackground(final JSONObject jsonObject, final ObjectReceiver<OBJECT_CLASS> objectReceiver, final int priority){
-        addInBackground(mObjectClass, jsonObject, objectReceiver, priority);
-    }
-
-    /**
      * Adds all objects from the passed jsonarray, may NOT be type-safe so be careful with this
      * @param array
      */
@@ -75,12 +66,8 @@ public abstract class DBManager<OBJECT_CLASS extends Model> extends SingleDBMana
         addAll(mObjectClass, array);
     }
 
-    public void addAllInBackground(final JSONArray array, final Runnable finishedRunnable, String tag, int priority){
-        addAllInBackground(mObjectClass, array, finishedRunnable, tag, priority);
-    }
-
-    public void addAllInBackground(final JSONArray array, final Runnable finishedRunnable, String tag){
-        addAllInBackground(array, finishedRunnable, tag, DBRequest.PRIORITY_LOW);
+    public void addAllInBackground(final JSONArray array, final Runnable finishedRunnable, DBRequestInfo requestInfo){
+        addAllInBackground(mObjectClass, array, finishedRunnable, requestInfo);
     }
 
     /**

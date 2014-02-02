@@ -42,49 +42,29 @@ public abstract class DBRequest implements Comparable<DBRequest> {
 
     public abstract void run();
 
-    /**
-     * The higher the number, the faster the request will be processed,
-     * default is PRIORITY_LOW
-     */
-    private int priority = PRIORITY_LOW;
+    private DBRequestInfo mInfo;
 
     /**
-     * Give this request a name
+     * Constructs this class using the specified DBRequest info
+     * @param dbRequestInfo
      */
-    private String name;
-
-    /**
-     * Constructs a new instance specifying a priority and name
-     * @param priority
-     * @param name
-     */
-    public DBRequest(int priority, String name){
-        this.priority = priority;
-        this.name = name;
-    }
-
-    /**
-     * Constructs a new instance with a priority and UUID for the name
-     * @param priority
-     */
-    public DBRequest(int priority){
-        this.priority = priority;
-        this.name = UUID.randomUUID().toString();
+    public DBRequest(DBRequestInfo dbRequestInfo) {
+        mInfo = dbRequestInfo;
     }
 
     /**
      * Creates a new, low priority request
      */
     public DBRequest(){
-        this.name = UUID.randomUUID().toString();
+        mInfo = DBRequestInfo.create();
     }
 
     @Override
     public int compareTo(DBRequest another) {
-        return another.priority - priority;
+        return another.mInfo.getPriority() - mInfo.getPriority();
     }
 
     public String getName() {
-        return name;
+        return mInfo.getName();
     }
 }

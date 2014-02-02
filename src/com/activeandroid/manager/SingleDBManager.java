@@ -13,6 +13,7 @@ import com.activeandroid.query.Select;
 import com.activeandroid.interfaces.CollectionReceiver;
 import com.activeandroid.interfaces.ObjectReceiver;
 import com.activeandroid.runtime.DBRequest;
+import com.activeandroid.runtime.DBRequestInfo;
 import com.activeandroid.runtime.DBRequestQueue;
 import com.activeandroid.util.SQLiteUtils;
 
@@ -20,6 +21,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -102,33 +104,13 @@ public class SingleDBManager {
      * Adds an object to the DB in the BG
      * @param jsonObject
      * @param objectReceiver
-     * @param priority
+     * @param dbRequestInfo
      */
-    public <OBJECT_CLASS extends Model> void addInBackground(final Class<OBJECT_CLASS> obClazz, final JSONObject jsonObject, final ObjectReceiver<OBJECT_CLASS> objectReceiver, final int priority){
-        processOnBackground(new DBRequest(priority, "add") {
+    public <OBJECT_CLASS extends Model> void addInBackground(final Class<OBJECT_CLASS> obClazz, final JSONObject jsonObject, final ObjectReceiver<OBJECT_CLASS> objectReceiver, DBRequestInfo dbRequestInfo){
+        processOnBackground(new DBRequest(dbRequestInfo) {
             @Override
             public void run() {
                 final OBJECT_CLASS object = add(obClazz, jsonObject);
-                processOnForeground(new Runnable() {
-                    @Override
-                    public void run() {
-                        objectReceiver.onObjectReceived(object);
-                    }
-                });
-            }
-        });
-    }
-
-    /**
-     * Adds an object to the DB in the BG
-     * @param objectReceiver
-     * @param priority
-     */
-    public <OBJECT_CLASS extends Model> void addInBackground(final OBJECT_CLASS inObject, final ObjectReceiver<OBJECT_CLASS> objectReceiver, final int priority){
-        processOnBackground(new DBRequest(priority, "add") {
-            @Override
-            public void run() {
-                final OBJECT_CLASS object = add(inObject);
                 processOnForeground(new Runnable() {
                     @Override
                     public void run() {
@@ -175,8 +157,8 @@ public class SingleDBManager {
 
     }
 
-    public <OBJECT_CLASS extends Model> void addAllInBackground(final Class<OBJECT_CLASS> obClazz, final JSONArray array, final Runnable finishedRunnable, String tag, int priority){
-        processOnBackground(new DBRequest(priority, "add "+ tag) {
+    public <OBJECT_CLASS extends Model> void addAllInBackground(final Class<OBJECT_CLASS> obClazz, final JSONArray array, final Runnable finishedRunnable, DBRequestInfo dbRequestInfo){
+        processOnBackground(new DBRequest(dbRequestInfo) {
             @Override
             public void run() {
                 addAll(obClazz, array);
@@ -186,25 +168,6 @@ public class SingleDBManager {
             }
         });
     }
-
-    public <OBJECT_CLASS extends Model> void addAllInBackground(final Class<OBJECT_CLASS> obClass, final JSONArray array, final Runnable finishedRunnable, String tag){
-        addAllInBackground(obClass, array, finishedRunnable, tag, DBRequest.PRIORITY_LOW);
-    }
-
-
-    public <OBJECT_CLASS extends Model, LIST_CLASS extends List<OBJECT_CLASS>> void addAllInBackground(final LIST_CLASS objects, final Runnable finishedRunnable, String tag, int priority) {
-        processOnBackground(new DBRequest(priority, "add "+ tag) {
-            @Override
-            public void run() {
-                addAll(objects);
-
-                if(finishedRunnable!=null)
-                    processOnForeground(finishedRunnable);
-            }
-        });
-    }
-
-
 
     /**
      * Retrieves a list of objects from the database without any threading
@@ -230,7 +193,7 @@ public class SingleDBManager {
      * @param receiver - function to call when finished that passes the list of objects that was found
      */
     public <OBJECT_CLASS extends Model> void fetchAll(final Class<OBJECT_CLASS> obClazz, final CollectionReceiver<OBJECT_CLASS> receiver){
-        processOnBackground(new DBRequest(DBRequest.PRIORITY_UI, "fetch") {
+        processOnBackground(new DBRequest(DBRequestInfo.createFetch()) {
             @Override
             public void run() {
                 final List<OBJECT_CLASS> list = getAll(obClazz);
@@ -250,7 +213,7 @@ public class SingleDBManager {
      * @param receiver - function to call when finished that passes the list of objects that was found
      */
     public <OBJECT_CLASS extends Model> void fetchAllWithSort(final Class<OBJECT_CLASS> obClazz, final String sort, final CollectionReceiver<OBJECT_CLASS> receiver){
-        processOnBackground(new DBRequest(DBRequest.PRIORITY_UI, "fetch") {
+        processOnBackground(new DBRequest(DBRequestInfo.createFetch()) {
             @Override
             public void run() {
                 final List<OBJECT_CLASS> list = getAllWithSort(obClazz, sort);
@@ -265,7 +228,7 @@ public class SingleDBManager {
     };
 
     public <OBJECT_CLASS extends Model> void fetchAllWithColumnValue(final Class<OBJECT_CLASS> obClazz, final Object value, final String column, final CollectionReceiver<OBJECT_CLASS> receiver){
-        processOnBackground(new DBRequest(DBRequest.PRIORITY_UI, "fetch") {
+        processOnBackground(new DBRequest(DBRequestInfo.create("fetch" , DBRequest.PRIORITY_UI)) {
             @Override
             public void run() {
                 final List<OBJECT_CLASS> list = getAllWithColumnValue(obClazz, column, value);
@@ -332,7 +295,7 @@ public class SingleDBManager {
      * @param objectReceiver
      */
     public <OBJECT_CLASS extends Model> void fetchCount(final Class<OBJECT_CLASS> obclazz, final ObjectReceiver<Long> objectReceiver){
-        processOnBackground(new DBRequest(DBRequest.PRIORITY_UI) {
+        processOnBackground(new DBRequest(DBRequestInfo.createFetch()) {
             @Override
             public void run() {
                 processOnForeground(new Runnable() {
@@ -346,7 +309,7 @@ public class SingleDBManager {
     }
 
     /**
-     * Will return the object if its within the DB, if not, it will call upon an object requester to get the data from the API
+     * Will return the object if its within the DB, if not, it will call upon an {@link com.activeandroid.interfaces.ObjectRequester} to get the data from the API
      *
      * @param objectReceiver
      * @param uid
@@ -368,7 +331,7 @@ public class SingleDBManager {
         }
     }
     /**
-     * Will return the object if its within the DB, if not, it will call upon an object requester to get the data from the API
+     * Will return the object if its within the DB, if not, it will not call an{@link com.activeandroid.interfaces.ObjectRequester}
      *
      * @param objectReceiver
      * @param uid
@@ -376,6 +339,16 @@ public class SingleDBManager {
      */
     public <OBJECT_CLASS extends Model> boolean fetchObject(final Class<OBJECT_CLASS> obClazz, final ObjectReceiver<OBJECT_CLASS> objectReceiver, final Object... uid){
        return fetchObject(obClazz, null, objectReceiver, uid);
+    }
+
+
+    /**
+     * Deletes all objects from the specified table
+     * @param obClazz
+     * @param <OBJECT_CLASS>
+     */
+    public <OBJECT_CLASS extends Model> void deleteAll(Class<OBJECT_CLASS> obClazz){
+        new Delete().from(obClazz).execute();
     }
 
     /**
@@ -395,103 +368,56 @@ public class SingleDBManager {
     }
 
     /**
-     * Deletes objects from the db
-     * @param finishedRunnable
-     * @param tag
-     * @param priority
-     * @param objects
-     * @param <OBJECT_CLASS>
-     */
-    public<OBJECT_CLASS extends Model> void deleteAllInBackground(final Runnable finishedRunnable, String tag, int priority, final OBJECT_CLASS...objects) {
-        processOnBackground(new DBRequest(priority, tag) {
-            @Override
-            public void run() {
-                deleteAll(objects);
-                if(finishedRunnable!=null){
-                    finishedRunnable.run();
-                }
-            }
-        });
-    }
-
-    /**
-     * Deletes objects from the db
-     * @param finishedRunnable
-     * @param tag
-     * @param objects
-     * @param <OBJECT_CLASS>
-     */
-    public<OBJECT_CLASS extends Model> void deleteAllInBackground(final Runnable finishedRunnable, String tag, final OBJECT_CLASS...objects) {
-        processOnBackground(new DBRequest(DBRequest.PRIORITY_LOW, tag) {
-            @Override
-            public void run() {
-                deleteAll(objects);
-                if(finishedRunnable!=null){
-                    finishedRunnable.run();
-                }
-            }
-        });
-    }
-
-    /**
-     * Deletes objects from the db
-     * @param finishedRunnable
-     * @param priority
-     * @param objects
-     * @param <OBJECT_CLASS>
-     */
-    public<OBJECT_CLASS extends Model> void deleteAllInBackground(final Runnable finishedRunnable, int priority, final OBJECT_CLASS...objects) {
-        processOnBackground(new DBRequest(priority) {
-            @Override
-            public void run() {
-                deleteAll(objects);
-                if(finishedRunnable!=null){
-                    finishedRunnable.run();
-                }
-            }
-        });
-    }
-
-    /**
-     * Deletes objects from the db
-     * @param finishedRunnable
-     * @param objects
-     * @param <OBJECT_CLASS>
-     */
-    public<OBJECT_CLASS extends Model> void deleteAllInBackground(final Runnable finishedRunnable, final OBJECT_CLASS...objects) {
-        processOnBackground(new DBRequest() {
-            @Override
-            public void run() {
-                deleteAll(objects);
-                if(finishedRunnable!=null){
-                    finishedRunnable.run();
-                }
-            }
-        });
-    }
-
-    /**
-     * Deletes all objects from the specified table
-     * @param obClazz
-     * @param <OBJECT_CLASS>
-     */
-    public <OBJECT_CLASS extends Model> void deleteAll(Class<OBJECT_CLASS> obClazz){
-        new Delete().from(obClazz).execute();
-    }
-
-    /**
-     * Deletes all objects from the list specified
+     * Deletes all objects from the collection specified
      * @param list - the list of model objects you wish to delete
      */
-    public <OBJECT_CLASS extends Model, LIST_CLASS extends List<OBJECT_CLASS>> void deleteAll(LIST_CLASS list){
+    public <COLLECTION_CLASS extends Collection<OBJECT_CLASS>, OBJECT_CLASS extends Model> void deleteAll(COLLECTION_CLASS objects) {
         ActiveAndroid.beginTransaction();
         try{
-            for(OBJECT_CLASS object: list){
+            for(OBJECT_CLASS object: objects){
                 object.delete();
             }
             ActiveAndroid.setTransactionSuccessful();
         } finally {
             ActiveAndroid.endTransaction();
         }
+    }
+
+    /**
+     * Deletes objects from the db
+     * @param finishedRunnable
+     * @param dbRequestInfo
+     * @param objects
+     * @param <OBJECT_CLASS>
+     */
+    public<LIST_CLASS extends List<OBJECT_CLASS>, OBJECT_CLASS extends Model> void deleteAllInBackground(final Runnable finishedRunnable, DBRequestInfo dbRequestInfo, final LIST_CLASS objects) {
+        processOnBackground(new DBRequest(dbRequestInfo) {
+            @Override
+            public void run() {
+                deleteAll(objects);
+                if(finishedRunnable!=null){
+                    finishedRunnable.run();
+                }
+            }
+        });
+    }
+
+    /**
+     * Deletes objects from the db
+     * @param finishedRunnable
+     * @param dbRequestInfo
+     * @param objects
+     * @param <OBJECT_CLASS>
+     */
+    public<OBJECT_CLASS extends Model> void deleteAllInBackground(final Runnable finishedRunnable, DBRequestInfo dbRequestInfo, final OBJECT_CLASS...objects) {
+        processOnBackground(new DBRequest(dbRequestInfo) {
+            @Override
+            public void run() {
+                deleteAll(objects);
+                if(finishedRunnable!=null){
+                    finishedRunnable.run();
+                }
+            }
+        });
     }
 }
