@@ -20,7 +20,6 @@ import com.activeandroid.util.SQLiteUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -140,7 +139,7 @@ public class SingleDBManager {
      * Adds all objects to the DB
      * @param objects
      */
-    public <OBJECT_CLASS extends Model,LIST_CLASS extends List<OBJECT_CLASS>> void addAll(LIST_CLASS objects){
+    public <OBJECT_CLASS extends Model, COLLECTION_CLASS extends Collection<OBJECT_CLASS>> void addAll(COLLECTION_CLASS objects){
         ActiveAndroid.beginTransaction();
         try{
             for(OBJECT_CLASS object: objects){
@@ -178,6 +177,17 @@ public class SingleDBManager {
             public void run() {
                 addAll(obClazz, array);
 
+                if(finishedRunnable!=null)
+                    processOnForeground(finishedRunnable);
+            }
+        });
+    }
+
+    public <COLLECTION_CLASS extends Collection<OBJECT_CLASS>, OBJECT_CLASS extends Model> void addAllInBackground(final COLLECTION_CLASS collection, final Runnable finishedRunnable, DBRequestInfo dbRequestInfo){
+        processOnBackground(new DBRequest(dbRequestInfo) {
+            @Override
+            public void run() {
+                addAll(collection);
                 if(finishedRunnable!=null)
                     processOnForeground(finishedRunnable);
             }
