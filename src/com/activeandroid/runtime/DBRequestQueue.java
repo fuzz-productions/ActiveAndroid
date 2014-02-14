@@ -2,6 +2,7 @@ package com.activeandroid.runtime;
 
 import android.os.Looper;
 import android.os.Process;
+import android.util.Log;
 
 import java.util.Iterator;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -61,6 +62,7 @@ public class DBRequestQueue extends Thread{
             }
 
             try{
+                Log.d("DBRequestQueue", "Size is: " + mQueue.size() + " executing:" + runnable.getName());
                 runnable.run();
             } catch (Throwable t){
                 throw new RuntimeException(t);
@@ -71,7 +73,9 @@ public class DBRequestQueue extends Thread{
 
     public void add(DBRequest runnable){
         synchronized (mQueue){
-            mQueue.add(runnable);
+            if(!mQueue.contains(runnable)){
+                mQueue.add(runnable);
+            }
         }
     }
 

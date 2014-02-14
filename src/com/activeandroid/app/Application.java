@@ -27,6 +27,8 @@ public class Application extends android.app.Application {
 
         //Start the DB request queue
         DBRequestQueue.getSharedInstance();
+
+
 	}
 	
 	@Override

@@ -24,6 +24,8 @@ import com.activeandroid.Model;
 import com.activeandroid.serializer.TypeSerializer;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 
 public final class ReflectionUtils {
@@ -82,5 +84,71 @@ public final class ReflectionUtils {
             outFields = getAllFields(outFields, inClass.getSuperclass());
         }
         return outFields;
+    }
+
+    /**
+     * Finds the method from the object to get the size of its components
+     * @param objectClazz
+     * @return
+     */
+    public static int invokeGetSizeOfObject(Object inObject){
+        Method method = null;
+        Class objectClazz = inObject.getClass();
+        try {
+            method = objectClazz.getDeclaredMethod("length", null);
+        } catch (NoSuchMethodException e) {
+            try {
+                method = objectClazz.getDeclaredMethod("size", null);
+            } catch (NoSuchMethodException e1) {
+                try {
+                    method = objectClazz.getDeclaredMethod("count", null);
+                } catch (NoSuchMethodException e2) {
+                    //custom method will go here
+                }
+            }
+        } finally {
+            if(method!=null){
+                method.setAccessible(true);
+                Integer count = 0;
+                try {
+                    count = (Integer) method.invoke(inObject, null);
+                } catch (Throwable throwable) {
+                    throw new RuntimeException(throwable);
+                } finally {
+                    return count;
+                }
+            } else{
+                return 0;
+            }
+        }
+    }
+
+    public static Object invokeGetMethod(Object inObject, int index){
+        Method method = null;
+        Class objectClazz = inObject.getClass();
+
+        try {
+            method = objectClazz.getDeclaredMethod("get", null);
+        } catch (NoSuchMethodException e) {
+            try {
+                method = objectClazz.getDeclaredMethod("getItem", null);
+            } catch (NoSuchMethodException e1) {
+
+            }
+        } finally {
+            if(method!=null){
+                method.setAccessible(true);
+                Object outObject = 0;
+                try {
+                    outObject = method.invoke(index, index);
+                } catch (Throwable e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    return outObject;
+                }
+            } else{
+                return null;
+            }
+        }
     }
 }

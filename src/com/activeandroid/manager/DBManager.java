@@ -1,24 +1,10 @@
 package com.activeandroid.manager;
 
-import android.database.DatabaseUtils;
-import android.os.Handler;
-
-import com.activeandroid.ActiveAndroid;
-import com.activeandroid.Cache;
 import com.activeandroid.Model;
-import com.activeandroid.exception.DBManagerNotOnMainException;
-import com.activeandroid.query.Select;
 import com.activeandroid.interfaces.CollectionReceiver;
 import com.activeandroid.interfaces.ObjectReceiver;
-import com.activeandroid.runtime.DBRequest;
 import com.activeandroid.runtime.DBRequestInfo;
-import com.activeandroid.runtime.DBRequestQueue;
-import com.activeandroid.util.SQLiteUtils;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -51,10 +37,10 @@ public abstract class DBManager<OBJECT_CLASS extends Model> extends SingleDBMana
     }
 
     /**
-     * Adds a json object to this class, however its advised you ensure that the jsonobject being passed is what you want, since there's no type checking
+     * Adds a object to this class, however its advised you ensure that the object being passed is what you want, since there's no type checking
      * @param object
      */
-    public OBJECT_CLASS add(JSONObject object){
+    public OBJECT_CLASS add(Object object){
         return add(mObjectClass, object);
     }
 
@@ -64,19 +50,19 @@ public abstract class DBManager<OBJECT_CLASS extends Model> extends SingleDBMana
      * @param objectReceiver
      * @param dbRequestInfo
      */
-    public void addInBackground(final JSONObject jsonObject, final ObjectReceiver<OBJECT_CLASS> objectReceiver, DBRequestInfo dbRequestInfo){
+    public void addInBackground(final Object jsonObject, final ObjectReceiver<OBJECT_CLASS> objectReceiver, DBRequestInfo dbRequestInfo){
         addInBackground(mObjectClass, jsonObject, objectReceiver, dbRequestInfo);
     }
 
     /**
-     * Adds all objects from the passed jsonarray, may NOT be type-safe so be careful with this
+     * Adds all objects from the passed array, may NOT be type-safe so be careful with this
      * @param array
      */
-    public void addAll(JSONArray array){
+    public void addAll(Object array){
         addAll(mObjectClass, array);
     }
 
-    public void addAllInBackground(final JSONArray array, final Runnable finishedRunnable, DBRequestInfo requestInfo){
+    public void addAllInBackground(final Object array, final Runnable finishedRunnable, DBRequestInfo requestInfo){
         addAllInBackground(mObjectClass, array, finishedRunnable, requestInfo);
     }
 
@@ -122,7 +108,6 @@ public abstract class DBManager<OBJECT_CLASS extends Model> extends SingleDBMana
 
     /**
      * This will get the where statement for this object, the amount of ids passed must match the primary key column size
-     * @param uid
      * @return
      */
     public OBJECT_CLASS getObjectById(Object...ids){

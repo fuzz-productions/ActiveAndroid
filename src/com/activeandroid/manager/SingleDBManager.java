@@ -15,10 +15,8 @@ import com.activeandroid.interfaces.ObjectReceiver;
 import com.activeandroid.runtime.DBRequest;
 import com.activeandroid.runtime.DBRequestInfo;
 import com.activeandroid.runtime.DBRequestQueue;
+import com.activeandroid.util.ReflectionUtils;
 import com.activeandroid.util.SQLiteUtils;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.Collection;
 import java.util.List;
@@ -90,9 +88,9 @@ public class SingleDBManager {
      * Adds a json object to this class, however its advised you ensure that the jsonobject being passed is what you want, since there's no type checking
      * @param object
      */
-    public <OBJECT_CLASS extends Model> OBJECT_CLASS add(Class<OBJECT_CLASS> obClazz, JSONObject object){
+    public <OBJECT_CLASS extends Model> OBJECT_CLASS add(Class<OBJECT_CLASS> obClazz, Object object){
         try {
-            return add(obClazz.getConstructor(JSONObject.class).newInstance(object));
+            return add(obClazz.getConstructor(object.getClass()).newInstance(object));
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -105,7 +103,7 @@ public class SingleDBManager {
      * @param objectReceiver
      * @param dbRequestInfo
      */
-    public <OBJECT_CLASS extends Model> void addInBackground(final Class<OBJECT_CLASS> obClazz, final JSONObject jsonObject, final ObjectReceiver<OBJECT_CLASS> objectReceiver, DBRequestInfo dbRequestInfo){
+    public <OBJECT_CLASS extends Model> void addInBackground(final Class<OBJECT_CLASS> obClazz, final Object jsonObject, final ObjectReceiver<OBJECT_CLASS> objectReceiver, DBRequestInfo dbRequestInfo){
         processOnBackground(new DBRequest(dbRequestInfo) {
             @Override
             public void run() {
@@ -152,14 +150,15 @@ public class SingleDBManager {
     }
 
     /**
-     * Adds all objects from the passed jsonarray, may NOT be type-safe so be careful with this
+     * Adds all objects from the passed object (if it has collection-like methods), may NOT be type-safe so be careful with this
      * @param array
      */
-    public <OBJECT_CLASS extends Model> void addAll(Class<OBJECT_CLASS> obClazz, JSONArray array){
+    public <OBJECT_CLASS extends Model> void addAll(Class<OBJECT_CLASS> obClazz, Object array){
         ActiveAndroid.beginTransaction();
         try{
-            for(int i = 0; i < array.length();i++){
-                OBJECT_CLASS object = obClazz.getConstructor(JSONObject.class).newInstance(array.get(i));
+            int count = ReflectionUtils.invokeGetSizeOfObject(array);
+            for(int i = 0; i < count;i++){
+                OBJECT_CLASS object = obClazz.getConstructor(array.getClass()).newInstance(ReflectionUtils.invokeGetMethod(array, i));
                 add(object);
             }
             ActiveAndroid.setTransactionSuccessful();
@@ -171,7 +170,7 @@ public class SingleDBManager {
 
     }
 
-    public <OBJECT_CLASS extends Model> void addAllInBackground(final Class<OBJECT_CLASS> obClazz, final JSONArray array, final Runnable finishedRunnable, DBRequestInfo dbRequestInfo){
+    public <OBJECT_CLASS extends Model> void addAllInBackground(final Class<OBJECT_CLASS> obClazz, final Object array, final Runnable finishedRunnable, DBRequestInfo dbRequestInfo){
         processOnBackground(new DBRequest(dbRequestInfo) {
             @Override
             public void run() {
