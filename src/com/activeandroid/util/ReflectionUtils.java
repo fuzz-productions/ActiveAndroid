@@ -128,10 +128,10 @@ public final class ReflectionUtils {
         Class objectClazz = inObject.getClass();
 
         try {
-            method = objectClazz.getDeclaredMethod("get", null);
+            method = objectClazz.getDeclaredMethod("get", Integer.class);
         } catch (NoSuchMethodException e) {
             try {
-                method = objectClazz.getDeclaredMethod("getItem", null);
+                method = objectClazz.getDeclaredMethod("getItem", Integer.class);
             } catch (NoSuchMethodException e1) {
 
             }
