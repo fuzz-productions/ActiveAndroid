@@ -140,7 +140,7 @@ public final class ReflectionUtils {
                 method.setAccessible(true);
                 Object outObject = 0;
                 try {
-                    outObject = method.invoke(index, index);
+                    outObject = method.invoke(inObject, index);
                 } catch (Throwable e) {
                     throw new RuntimeException(e);
                 } finally {
