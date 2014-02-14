@@ -158,7 +158,8 @@ public class SingleDBManager {
         try{
             int count = ReflectionUtils.invokeGetSizeOfObject(array);
             for(int i = 0; i < count;i++){
-                OBJECT_CLASS object = obClazz.getConstructor(array.getClass()).newInstance(ReflectionUtils.invokeGetMethod(array, i));
+                Object getObject = ReflectionUtils.invokeGetMethod(array, i);
+                OBJECT_CLASS object = obClazz.getConstructor(getObject.getClass()).newInstance(getObject);
                 add(object);
             }
             ActiveAndroid.setTransactionSuccessful();
