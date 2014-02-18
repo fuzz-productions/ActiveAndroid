@@ -15,26 +15,12 @@ import java.util.concurrent.PriorityBlockingQueue;
  */
 public class DBRequestQueue extends Thread{
 
-    private static DBRequestQueue shared;
-
     /**
      * Queue of requests
      */
     private final PriorityBlockingQueue<DBRequest> mQueue;
 
     private boolean mQuit = false;
-
-    /**
-     * Gets and starts the request queue if it hasn't started yet.
-     * @return
-     */
-    public static DBRequestQueue getSharedInstance(){
-        if(shared==null){
-            shared = new DBRequestQueue("DBRequestQueue");
-            shared.start();
-        }
-        return shared;
-    }
 
     /**
      * Creates a queue with the specified name to ID it.
@@ -62,7 +48,7 @@ public class DBRequestQueue extends Thread{
             }
 
             try{
-                Log.d("DBRequestQueue", "Size is: " + mQueue.size() + " executing:" + runnable.getName());
+                Log.d("DBRequestQueue + " + getName(), "Size is: " + mQueue.size() + " executing:" + runnable.getName());
                 runnable.run();
             } catch (Throwable t){
                 throw new RuntimeException(t);

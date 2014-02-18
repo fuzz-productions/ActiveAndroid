@@ -25,6 +25,7 @@ public abstract class DBManager<OBJECT_CLASS extends Model> extends SingleDBMana
      * @param classClass
      */
     public DBManager(Class<OBJECT_CLASS> classClass){
+        super(classClass.getSimpleName());
         mObjectClass = classClass;
     }
 

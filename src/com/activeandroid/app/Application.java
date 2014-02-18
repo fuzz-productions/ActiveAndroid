@@ -25,17 +25,12 @@ public class Application extends android.app.Application {
 		super.onCreate();
 		ActiveAndroid.initialize(this);
 
-        //Start the DB request queue
-        DBRequestQueue.getSharedInstance();
-
-
 	}
 	
 	@Override
 	public void onTerminate() {
 		super.onTerminate();
 
-        DBRequestQueue.getSharedInstance().quit();
 		ActiveAndroid.dispose();
 	}
 }

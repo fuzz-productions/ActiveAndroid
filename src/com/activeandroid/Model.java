@@ -181,6 +181,10 @@ public abstract class Model {
         return model!=null;
     }
 
+    public void update(){
+
+    }
+
     /**
      * Checks to see if object exists, if so, deletes it then updates itself
      */

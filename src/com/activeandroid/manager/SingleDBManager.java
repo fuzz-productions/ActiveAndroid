@@ -26,11 +26,29 @@ import java.util.List;
  * Date: 12/26/13
  * Contributors:
  * Description: This class will provide one instance for all tables,
- * however the downside requires the class of an object when retrieving from the DB.
+ * however the downside requires the class of an object when retrieving from the DB. Any {@link com.activeandroid.manager.DBManager} will extend off this class
+ * and provide its own {@link com.activeandroid.runtime.DBRequestQueue}
  */
 public class SingleDBManager {
 
     private static SingleDBManager manager;
+
+    private DBRequestQueue mQueue;
+
+    private String mName;
+
+    /**
+     * Creates the SingleDBManager while starting its own request queue
+     * @param name
+     */
+    public SingleDBManager(String name){
+        checkThread();
+        mName = name;
+
+        if(!getQueue().isAlive()){
+            getQueue().start();
+        }
+    }
 
     /**
      * Returns the application's only needed DBManager.
@@ -39,10 +57,16 @@ public class SingleDBManager {
      */
     public static SingleDBManager getSharedInstance(){
         if(manager==null){
-           manager = new SingleDBManager();
-           manager.checkThread();
+           manager = new SingleDBManager("SingleDBManager");
         }
         return manager;
+    }
+
+    public DBRequestQueue getQueue(){
+        if(mQueue==null){
+            mQueue = new DBRequestQueue(mName);
+        }
+        return mQueue;
     }
 
     /**
@@ -64,7 +88,7 @@ public class SingleDBManager {
      * @param runnable
      */
     protected void processOnBackground(DBRequest runnable){
-        DBRequestQueue.getSharedInstance().add(runnable);
+        getQueue().add(runnable);
     }
 
     /**
@@ -394,7 +418,7 @@ public class SingleDBManager {
 
     /**
      * Deletes all objects from the collection specified
-     * @param list - the list of model objects you wish to delete
+     * @param objects - the list of model objects you wish to delete
      */
     public <COLLECTION_CLASS extends Collection<OBJECT_CLASS>, OBJECT_CLASS extends Model> void deleteAll(COLLECTION_CLASS objects) {
         ActiveAndroid.beginTransaction();
