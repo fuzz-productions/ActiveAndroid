@@ -324,7 +324,7 @@ public abstract class Model {
 
 	@Override
 	public String toString() {
-		return mTableInfo.getTableName() + "@" + getId();
+		return mTableInfo!=null? mTableInfo.getTableName() + "@" + getId() : "No Table for: " + getClass() + "@" + getId();
 	}
 
     public long getRowId(){
