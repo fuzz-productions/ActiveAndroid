@@ -3,6 +3,7 @@ package com.activeandroid.manager;
 import com.activeandroid.Model;
 import com.activeandroid.interfaces.CollectionReceiver;
 import com.activeandroid.interfaces.ObjectReceiver;
+import com.activeandroid.runtime.DBRequest;
 import com.activeandroid.runtime.DBRequestInfo;
 
 import java.util.List;
@@ -203,4 +204,5 @@ public abstract class DBManager<OBJECT_CLASS extends Model> extends SingleDBMana
     public void deleteAll() {
         deleteAll(mObjectClass);
     }
+
 }
