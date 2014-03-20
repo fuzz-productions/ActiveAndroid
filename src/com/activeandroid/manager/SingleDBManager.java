@@ -12,12 +12,15 @@ import com.activeandroid.query.Delete;
 import com.activeandroid.query.Select;
 import com.activeandroid.interfaces.CollectionReceiver;
 import com.activeandroid.interfaces.ObjectReceiver;
+import com.activeandroid.runtime.DBBatchSaveQueue;
 import com.activeandroid.runtime.DBRequest;
 import com.activeandroid.runtime.DBRequestInfo;
 import com.activeandroid.runtime.DBRequestQueue;
 import com.activeandroid.util.ReflectionUtils;
 import com.activeandroid.util.SQLiteUtils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -48,6 +51,10 @@ public class SingleDBManager {
         if(!getQueue().isAlive()){
             getQueue().start();
         }
+
+        if(!getSaveQueue().isAlive()){
+            getSaveQueue().start();
+        }
     }
 
     /**
@@ -67,6 +74,10 @@ public class SingleDBManager {
             mQueue = new DBRequestQueue(mName);
         }
         return mQueue;
+    }
+
+    public DBBatchSaveQueue getSaveQueue(){
+        return DBBatchSaveQueue.getSharedSaveQueue();
     }
 
     /**
@@ -99,6 +110,15 @@ public class SingleDBManager {
         mRequestHandler.post(runnable);
     }
 
+    public <OBJECT_CLASS extends Model> OBJECT_CLASS getObject(Class<OBJECT_CLASS> obClazz, Object object){
+        try {
+            return obClazz.getConstructor(object.getClass()).newInstance(object);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     /**
      * Adds an object to the manager's database
      * @param inObject - object of the class defined by the manager
@@ -114,7 +134,7 @@ public class SingleDBManager {
      */
     public <OBJECT_CLASS extends Model> OBJECT_CLASS add(Class<OBJECT_CLASS> obClazz, Object object){
         try {
-            return add(obClazz.getConstructor(object.getClass()).newInstance(object));
+            return add(getObject(obClazz,object));
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -124,37 +144,23 @@ public class SingleDBManager {
     /**
      * Adds an object to the DB in the BG
      * @param jsonObject
-     * @param objectReceiver
-     * @param dbRequestInfo
      */
-    public <OBJECT_CLASS extends Model> void addInBackground(final Class<OBJECT_CLASS> obClazz, final Object jsonObject, final ObjectReceiver<OBJECT_CLASS> objectReceiver, DBRequestInfo dbRequestInfo){
-        processOnBackground(new DBRequest(dbRequestInfo) {
-            @Override
-            public void run() {
-                final OBJECT_CLASS object = add(obClazz, jsonObject);
-                processOnForeground(new Runnable() {
-                    @Override
-                    public void run() {
-                        objectReceiver.onObjectReceived(object);
-                    }
-                });
-            }
-        });
+    public <OBJECT_CLASS extends Model> void addInBackground(final Class<OBJECT_CLASS> obClazz, final Object jsonObject, final ObjectReceiver<OBJECT_CLASS> objectReceiver){
+        OBJECT_CLASS object = getObject(obClazz, jsonObject);
+        if(objectReceiver!=null){
+            objectReceiver.onObjectReceived(object);
+        }
+        getSaveQueue().add(object);
+
     }
 
-    public <OBJECT_CLASS extends Model> void addInBackground(final OBJECT_CLASS object, final ObjectReceiver<OBJECT_CLASS> objectReceiver, DBRequestInfo dbRequestInfo){
-        processOnBackground(new DBRequest(dbRequestInfo) {
-            @Override
-            public void run() {
-                final OBJECT_CLASS ob = add(object);
-                processOnForeground(new Runnable() {
-                    @Override
-                    public void run() {
-                        objectReceiver.onObjectReceived(ob);
-                    }
-                });
-            }
-        });
+    public <OBJECT_CLASS extends Model> void addInBackground(final Class<OBJECT_CLASS> obClazz, final Object jsonObject){
+        addInBackground(obClazz, jsonObject,null);
+    }
+
+
+    public <OBJECT_CLASS extends Model> void addInBackground(final OBJECT_CLASS object){
+        getSaveQueue().add(object);
     }
 
     /**
@@ -195,27 +201,28 @@ public class SingleDBManager {
 
     }
 
-    public <OBJECT_CLASS extends Model> void addAllInBackground(final Class<OBJECT_CLASS> obClazz, final Object array, final Runnable finishedRunnable, DBRequestInfo dbRequestInfo){
-        processOnBackground(new DBRequest(dbRequestInfo) {
-            @Override
-            public void run() {
-                addAll(obClazz, array);
-
-                if(finishedRunnable!=null)
-                    processOnForeground(finishedRunnable);
-            }
-        });
+    public <OBJECT_CLASS extends Model> void addAllInBackground(final Class<OBJECT_CLASS> obClazz, final Object array) {
+        addAllInBackground(obClazz, array, null);
     }
 
-    public <COLLECTION_CLASS extends Collection<OBJECT_CLASS>, OBJECT_CLASS extends Model> void addAllInBackground(final COLLECTION_CLASS collection, final Runnable finishedRunnable, DBRequestInfo dbRequestInfo){
-        processOnBackground(new DBRequest(dbRequestInfo) {
-            @Override
-            public void run() {
-                addAll(collection);
-                if(finishedRunnable!=null)
-                    processOnForeground(finishedRunnable);
-            }
-        });
+
+    public <OBJECT_CLASS extends Model> void addAllInBackground(final Class<OBJECT_CLASS> obClazz, final Object array, final CollectionReceiver<OBJECT_CLASS> collectionReceiver){
+        List<OBJECT_CLASS> objects = new ArrayList<OBJECT_CLASS>();
+        int count = ReflectionUtils.invokeGetSizeOfObject(array);
+        for(int i = 0; i < count;i++){
+            Object getObject = ReflectionUtils.invokeGetMethod(array, i);
+            objects.add(getObject(obClazz, getObject));
+        }
+
+        if(collectionReceiver!=null){
+            collectionReceiver.onCollectionReceived(objects);
+        }
+
+        getSaveQueue().addAll(objects);
+    }
+
+    public <COLLECTION_CLASS extends Collection<OBJECT_CLASS>, OBJECT_CLASS extends Model> void addAllInBackground(final COLLECTION_CLASS collection){
+       getSaveQueue().addAll(collection);
     }
 
     /**

@@ -49,11 +49,13 @@ public abstract class DBManager<OBJECT_CLASS extends Model> extends SingleDBMana
     /**
      * Adds an object to the DB in the BG
      * @param jsonObject
-     * @param objectReceiver
-     * @param dbRequestInfo
      */
-    public void addInBackground(final Object jsonObject, final ObjectReceiver<OBJECT_CLASS> objectReceiver, DBRequestInfo dbRequestInfo){
-        addInBackground(mObjectClass, jsonObject, objectReceiver, dbRequestInfo);
+    public void addInBackground(final Object jsonObject){
+        addInBackground(mObjectClass, jsonObject);
+    }
+
+    public void addInBackground(final Object object, final ObjectReceiver<OBJECT_CLASS> objectReceiver){
+        addInBackground(mObjectClass, object, objectReceiver);
     }
 
     /**
@@ -64,8 +66,12 @@ public abstract class DBManager<OBJECT_CLASS extends Model> extends SingleDBMana
         addAll(mObjectClass, array);
     }
 
-    public void addAllInBackground(final Object array, final Runnable finishedRunnable, DBRequestInfo requestInfo){
-        addAllInBackground(mObjectClass, array, finishedRunnable, requestInfo);
+    public void addAllInBackground(final Object array){
+        addAllInBackground(mObjectClass, array);
+    }
+
+    public void addAllInBackground(final Object array, final CollectionReceiver<OBJECT_CLASS> collectionReceiver) {
+        addAllInBackground(mObjectClass, array, collectionReceiver);
     }
 
     /**
@@ -75,6 +81,10 @@ public abstract class DBManager<OBJECT_CLASS extends Model> extends SingleDBMana
      */
     public List<OBJECT_CLASS> getAll(){
         return getAll(mObjectClass);
+    }
+
+    public OBJECT_CLASS getObject(Object object){
+        return getObject(mObjectClass, object);
     }
 
     /**
@@ -129,9 +139,7 @@ public abstract class DBManager<OBJECT_CLASS extends Model> extends SingleDBMana
 
     /**
      * Gets all in a table by a group by
-     * @param obClazz
      * @param groupBy
-     * @param <OBJECT_CLASS>
      * @return
      */
     public List<OBJECT_CLASS> getAllWithGroupby(String groupBy){
