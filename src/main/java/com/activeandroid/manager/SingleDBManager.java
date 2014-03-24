@@ -16,6 +16,7 @@ import com.activeandroid.runtime.DBBatchSaveQueue;
 import com.activeandroid.runtime.DBRequest;
 import com.activeandroid.runtime.DBRequestInfo;
 import com.activeandroid.runtime.DBRequestQueue;
+import com.activeandroid.util.Log;
 import com.activeandroid.util.ReflectionUtils;
 import com.activeandroid.util.SQLiteUtils;
 
@@ -207,18 +208,29 @@ public class SingleDBManager {
 
 
     public <OBJECT_CLASS extends Model> void addAllInBackground(final Class<OBJECT_CLASS> obClazz, final Object array, final CollectionReceiver<OBJECT_CLASS> collectionReceiver){
-        List<OBJECT_CLASS> objects = new ArrayList<OBJECT_CLASS>();
-        int count = ReflectionUtils.invokeGetSizeOfObject(array);
-        for(int i = 0; i < count;i++){
-            Object getObject = ReflectionUtils.invokeGetMethod(array, i);
-            objects.add(getObject(obClazz, getObject));
-        }
+        processOnBackground(new DBRequest() {
+            @Override
+            public void run() {
+                final List<OBJECT_CLASS> objects = new ArrayList<OBJECT_CLASS>();
+                int count = ReflectionUtils.invokeGetSizeOfObject(array);
+                for(int i = 0; i < count;i++){
+                    Object getObject = ReflectionUtils.invokeGetMethod(array, i);
+                    objects.add(getObject(obClazz, getObject));
+                }
 
-        if(collectionReceiver!=null){
-            collectionReceiver.onCollectionReceived(objects);
-        }
+                if(collectionReceiver!=null){
+                    processOnForeground(new Runnable() {
+                        @Override
+                        public void run() {
+                            collectionReceiver.onCollectionReceived(objects);
+                        }
+                    });
+                }
 
-        getSaveQueue().addAll(objects);
+                getSaveQueue().addAll(objects);
+            }
+        });
+
     }
 
     public <COLLECTION_CLASS extends Collection<OBJECT_CLASS>, OBJECT_CLASS extends Model> void addAllInBackground(final COLLECTION_CLASS collection){

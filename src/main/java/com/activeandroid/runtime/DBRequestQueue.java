@@ -58,10 +58,8 @@ public class DBRequestQueue extends Thread{
     }
 
     public void add(DBRequest runnable){
-        synchronized (mQueue){
-            if(!mQueue.contains(runnable)){
-                mQueue.add(runnable);
-            }
+        if(!mQueue.contains(runnable)){
+            mQueue.add(runnable);
         }
     }
 
@@ -70,10 +68,8 @@ public class DBRequestQueue extends Thread{
      * @param runnable
      */
     public void cancel(DBRequest runnable){
-        synchronized (mQueue){
-            if(mQueue.contains(runnable)){
-                mQueue.remove(runnable);
-            }
+        if(mQueue.contains(runnable)){
+            mQueue.remove(runnable);
         }
     }
 

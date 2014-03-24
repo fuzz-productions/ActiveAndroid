@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.Model;
+import com.activeandroid.manager.SingleDBManager;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,24 +46,32 @@ public class DBBatchSaveQueue extends Thread{
         Looper.prepare();
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
         while (true){
-            ArrayList<Model> tmpModels;
+            final ArrayList<Model> tmpModels;
             synchronized (mModels){
                 tmpModels = new ArrayList<Model>(mModels);
                 mModels.clear();
             }
             if(tmpModels.size()>0) {
-                ActiveAndroid.beginTransaction();
-                try {
-                    Log.d("DBBatchSaveQueue", "Executing batch save of: " + tmpModels.size());
-                    for (Model model: tmpModels) {
-                        model.save();
+                //run this on the DBManager thread
+                SingleDBManager.getSharedInstance().getQueue().add(new DBRequest(DBRequestInfo.create("Batch Saving")) {
+                    @Override
+                    public void run() {
+                        long time = System.currentTimeMillis();
+                        ActiveAndroid.beginTransaction();
+                        try {
+                            Log.d("DBBatchSaveQueue", "Executing batch save of: " + tmpModels.size() + " on :" + Thread.currentThread().getName());
+                            for (Model model: tmpModels) {
+                                model.save();
+                            }
+                            ActiveAndroid.setTransactionSuccessful();
+                        } catch (Throwable e) {
+                            throw new RuntimeException(e.getCause());
+                        } finally {
+                            ActiveAndroid.endTransaction();
+                        }
+                        Log.d("DBBatchSaveQueue", "Time took: " + (System.currentTimeMillis() -time));
                     }
-                    ActiveAndroid.setTransactionSuccessful();
-                } catch (Throwable e) {
-                    throw new RuntimeException(e.getCause());
-                } finally {
-                    ActiveAndroid.endTransaction();
-                }
+                });
             }
 
             try {
