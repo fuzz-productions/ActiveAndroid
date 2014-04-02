@@ -16,11 +16,9 @@ import com.activeandroid.runtime.DBBatchSaveQueue;
 import com.activeandroid.runtime.DBRequest;
 import com.activeandroid.runtime.DBRequestInfo;
 import com.activeandroid.runtime.DBRequestQueue;
-import com.activeandroid.util.Log;
 import com.activeandroid.util.ReflectionUtils;
 import com.activeandroid.util.SQLiteUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

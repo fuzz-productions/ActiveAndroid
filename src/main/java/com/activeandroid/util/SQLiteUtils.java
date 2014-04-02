@@ -32,8 +32,6 @@ import com.activeandroid.serializer.TypeSerializer;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -213,7 +211,7 @@ public final class SQLiteUtils {
 			}
 		}
 		else {
-			Log.e("No type mapping for: " + type.toString());
+			AALog.e("No type mapping for: " + type.toString());
 		}
 
 		return definition.toString();
@@ -242,7 +240,7 @@ public final class SQLiteUtils {
         catch (IllegalArgumentException i){
             throw new RuntimeException("Default constructor for: " + type.getName() + " was not found.");
         } catch (Exception e) {
-			Log.e("Failed to process cursor.", e);
+			AALog.e("Failed to process cursor.", e);
 		}
 
 		return entities;

@@ -18,11 +18,11 @@ package com.activeandroid.test;
 
 import android.test.ApplicationTestCase;
 
-import com.activeandroid.app.Application;
+import com.activeandroid.app.AAApplication;
 
-public abstract class ActiveAndroidTestCase extends ApplicationTestCase<Application> {
+public abstract class ActiveAndroidTestCase extends ApplicationTestCase<AAApplication> {
 	public ActiveAndroidTestCase() {
-		super(Application.class);
+		super(AAApplication.class);
 	}
 
 	protected void setUp() throws Exception {

@@ -23,7 +23,7 @@ import java.util.List;
 import android.content.Context;
 
 import com.activeandroid.serializer.TypeSerializer;
-import com.activeandroid.util.Log;
+import com.activeandroid.util.AALog;
 import com.activeandroid.util.ReflectionUtils;
 
 public class Configuration {
@@ -263,7 +263,7 @@ public class Configuration {
 					}
 				}
 				catch (ClassNotFoundException e) {
-					Log.e("Couldn't create class.", e);
+					AALog.e("Couldn't create class.", e);
 				}
 			}
 
@@ -283,7 +283,7 @@ public class Configuration {
 					}
 				}
 				catch (ClassNotFoundException e) {
-					Log.e("Couldn't create class.", e);
+					AALog.e("Couldn't create class.", e);
 				}
 			}
 

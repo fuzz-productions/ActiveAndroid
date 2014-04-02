@@ -26,7 +26,7 @@ import com.activeandroid.content.ContentProvider;
 import com.activeandroid.query.Delete;
 import com.activeandroid.query.Select;
 import com.activeandroid.serializer.TypeSerializer;
-import com.activeandroid.util.Log;
+import com.activeandroid.util.AALog;
 import com.activeandroid.util.ReflectionUtils;
 import com.activeandroid.util.SQLiteUtils;
 
@@ -93,8 +93,8 @@ public abstract class Model {
 							fieldType = value.getClass();
 							// check that the serializer returned what it promised
 							if (!fieldType.equals(typeSerializer.getSerializedType())) {
-								Log.w(String.format("TypeSerializer returned wrong type: expected a %s but got a %s",
-										typeSerializer.getSerializedType(), fieldType));
+								AALog.w(String.format("TypeSerializer returned wrong type: expected a %s but got a %s",
+                                        typeSerializer.getSerializedType(), fieldType));
 							}
 						}
 					}
@@ -147,10 +147,10 @@ public abstract class Model {
 				}
 			}
 			catch (IllegalArgumentException e) {
-				Log.e(e.getClass().getName(), e);
+				AALog.e(e.getClass().getName(), e);
 			}
 			catch (IllegalAccessException e) {
-				Log.e(e.getClass().getName(), e);
+				AALog.e(e.getClass().getName(), e);
 			}
 		}
 
@@ -291,13 +291,13 @@ public abstract class Model {
 				}
 			}
 			catch (IllegalArgumentException e) {
-				Log.e(e.getClass().getName(), e);
+				AALog.e(e.getClass().getName(), e);
 			}
 			catch (IllegalAccessException e) {
-				Log.e(e.getClass().getName(), e);
+				AALog.e(e.getClass().getName(), e);
 			}
 			catch (SecurityException e) {
-				Log.e(e.getClass().getName(), e);
+				AALog.e(e.getClass().getName(), e);
 			}
 		}
 

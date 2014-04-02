@@ -18,7 +18,6 @@ package com.activeandroid;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -30,7 +29,7 @@ import com.activeandroid.annotation.ForeignKey;
 import com.activeandroid.annotation.PrimaryKey;
 import com.activeandroid.annotation.Table;
 import com.activeandroid.exception.PrimaryKeyNotFoundException;
-import com.activeandroid.util.Log;
+import com.activeandroid.util.AALog;
 import com.activeandroid.util.ReflectionUtils;
 
 public final class TableInfo {
@@ -126,7 +125,7 @@ public final class TableInfo {
 				return type.getDeclaredField("mId");
 			}
 			catch (NoSuchFieldException e) {
-				Log.e("Impossible!", e);
+				AALog.e("Impossible!", e);
 			}
 		}
 		else if (type.getSuperclass() != null) {

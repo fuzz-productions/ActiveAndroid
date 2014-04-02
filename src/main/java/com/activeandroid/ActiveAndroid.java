@@ -19,7 +19,7 @@ package com.activeandroid;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.activeandroid.util.Log;
+import com.activeandroid.util.AALog;
 
 public final class ActiveAndroid {
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -53,7 +53,7 @@ public final class ActiveAndroid {
 	}
 
 	public static void setLoggingEnabled(boolean enabled) {
-		Log.setEnabled(enabled);
+		AALog.setEnabled(enabled);
 	}
 
 	public static SQLiteDatabase getDatabase() {

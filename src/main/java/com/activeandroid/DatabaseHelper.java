@@ -31,7 +31,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.activeandroid.util.Log;
+import com.activeandroid.util.AALog;
 import com.activeandroid.util.NaturalOrderComparator;
 import com.activeandroid.util.SQLiteUtils;
 
@@ -106,7 +106,7 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
 			inputStream.close();
 		}
 		catch (IOException e) {
-			Log.e("Failed to open file", e);
+			AALog.e("Failed to open file", e);
 		}
 	}
 
@@ -117,7 +117,7 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
 	private void executePragmas(SQLiteDatabase db) {
 		if (SQLiteUtils.FOREIGN_KEYS_SUPPORTED) {
 			db.execSQL("PRAGMA foreign_keys=ON;");
-			Log.i("Foreign Keys supported. Enabling foreign key features.");
+			AALog.i("Foreign Keys supported. Enabling foreign key features.");
 		}
 	}
 
@@ -150,11 +150,11 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
 							executeSqlScript(db, file);
 							migrationExecuted = true;
 
-							Log.i(file + " executed succesfully.");
+							AALog.i(file + " executed succesfully.");
 						}
 					}
 					catch (NumberFormatException e) {
-						Log.w("Skipping invalidly named file: " + file, e);
+						AALog.w("Skipping invalidly named file: " + file, e);
 					}
 				}
 				db.setTransactionSuccessful();
@@ -164,7 +164,7 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
 			}
 		}
 		catch (IOException e) {
-			Log.e("Failed to execute migrations.", e);
+			AALog.e("Failed to execute migrations.", e);
 		}
 
 		return migrationExecuted;
@@ -181,7 +181,7 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
 			}
 		}
 		catch (IOException e) {
-			Log.e("Failed to execute " + file, e);
+			AALog.e("Failed to execute " + file, e);
 		}
 	}
 }

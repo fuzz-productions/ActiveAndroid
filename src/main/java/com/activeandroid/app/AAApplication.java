@@ -19,13 +19,24 @@ package com.activeandroid.app;
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.runtime.DBRequestQueue;
 
-public class Application extends android.app.Application {
+public class AAApplication extends android.app.Application {
+
+    private static boolean mDebug = false;
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		ActiveAndroid.initialize(this);
 
 	}
+
+    public static void setDebugLogEnabled(boolean enabled){
+        mDebug = enabled;
+    }
+
+    public static boolean isDebugEnabled(){
+        return mDebug;
+    }
 	
 	@Override
 	public void onTerminate() {

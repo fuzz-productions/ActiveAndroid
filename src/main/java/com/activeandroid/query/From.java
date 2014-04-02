@@ -21,7 +21,7 @@ import android.text.TextUtils;
 import com.activeandroid.Cache;
 import com.activeandroid.Model;
 import com.activeandroid.query.Join.JoinType;
-import com.activeandroid.util.Log;
+import com.activeandroid.util.AALog;
 import com.activeandroid.util.SQLiteUtils;
 
 import java.util.ArrayList;
@@ -194,8 +194,8 @@ public final class From implements Sqlable {
 
 		// Don't wast time building the string
 		// unless we're going to log it.
-		if (Log.isEnabled()) {
-			Log.v(sql.toString() + " " + TextUtils.join(",", getArguments()));
+		if (AALog.isEnabled()) {
+			AALog.v(sql.toString() + " " + TextUtils.join(",", getArguments()));
 		}
 
 		return sql.toString().trim();

@@ -24,7 +24,6 @@ import com.activeandroid.Model;
 import com.activeandroid.serializer.TypeSerializer;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -54,7 +53,7 @@ public final class ReflectionUtils {
 			}
 		}
 		catch (Exception e) {
-			Log.w("Couldn't find meta-data: " + name);
+			AALog.w("Couldn't find meta-data: " + name);
 		}
 
 		return null;

@@ -1,15 +1,14 @@
 package com.activeandroid.runtime;
 
 import android.os.Looper;
-import android.util.Log;
 
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.Model;
 import com.activeandroid.manager.SingleDBManager;
+import com.activeandroid.util.AALog;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Created by andrewgrosner
@@ -59,7 +58,7 @@ public class DBBatchSaveQueue extends Thread{
                         long time = System.currentTimeMillis();
                         ActiveAndroid.beginTransaction();
                         try {
-                            Log.d("DBBatchSaveQueue", "Executing batch save of: " + tmpModels.size() + " on :" + Thread.currentThread().getName());
+                            AALog.d("DBBatchSaveQueue", "Executing batch save of: " + tmpModels.size() + " on :" + Thread.currentThread().getName());
                             for (Model model: tmpModels) {
                                 model.save();
                             }
@@ -69,7 +68,7 @@ public class DBBatchSaveQueue extends Thread{
                         } finally {
                             ActiveAndroid.endTransaction();
                         }
-                        Log.d("DBBatchSaveQueue", "Time took: " + (System.currentTimeMillis() -time));
+                        AALog.d("DBBatchSaveQueue", "Time took: " + (System.currentTimeMillis() -time));
                     }
                 });
             }
