@@ -27,16 +27,12 @@ public class DBBatchSaveQueue extends Thread{
         return mBatchSaveQueue;
     }
 
-    private DBRequestQueue mQueue;
-
     private final ArrayList<Model> mModels;
 
     public DBBatchSaveQueue(){
         super("DBBatchSaveQueue");
 
         mModels = new ArrayList<Model>();
-        mQueue = new DBRequestQueue("DBBatchSaveRequestQueue");
-        mQueue.start();
     }
 
     @Override
@@ -82,48 +78,26 @@ public class DBBatchSaveQueue extends Thread{
     }
 
     public void add(final Model model){
-        mQueue.add(new DBRequest() {
-            @Override
-            public void run() {
-                synchronized (mModels){
-                    mModels.add(model);
-                }
-            }
-        });
+        synchronized (mModels){
+            mModels.add(model);
+        }
     }
 
     public <COLLECTION_CLASS extends Collection<OBJECT_CLASS>, OBJECT_CLASS extends Model> void addAll(final COLLECTION_CLASS list){
-        mQueue.add(new DBRequest() {
-            @Override
-            public void run() {
-                synchronized (mModels){
-                    mModels.addAll(list);
-                }
-            }
-        });
-
+        synchronized (mModels){
+            mModels.addAll(list);
+        }
     }
 
     public void remove(final Model model){
-        mQueue.add(new DBRequest(DBRequestInfo.create("Removing : "+  model.toString(), DBRequest.PRIORITY_HIGH)) {
-            @Override
-            public void run() {
-                synchronized (mModels){
-                    mModels.remove(model);
-                }
-            }
-        });
+        synchronized (mModels){
+            mModels.remove(model);
+        }
     }
 
     public void removeAll(final Collection collection){
-        mQueue.add(new DBRequest(DBRequestInfo.create("Removing : " + collection.toString(),DBRequest.PRIORITY_HIGH)) {
-            @Override
-            public void run() {
-                synchronized (mModels){
-                    mModels.removeAll(collection);
-                }
-            }
-        });
-
+        synchronized (mModels){
+            mModels.removeAll(collection);
+        }
     }
 }
