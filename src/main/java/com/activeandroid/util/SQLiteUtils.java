@@ -16,8 +16,10 @@ package com.activeandroid.util;
  * limitations under the License.
  */
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.text.TextUtils;
 
@@ -27,12 +29,15 @@ import com.activeandroid.TableInfo;
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.ForeignKey;
 import com.activeandroid.annotation.PrimaryKey;
+import com.activeandroid.content.ContentProvider;
 import com.activeandroid.exception.PrimaryKeyCannotBeNullException;
+import com.activeandroid.query.Select;
 import com.activeandroid.serializer.TypeSerializer;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -230,7 +235,7 @@ public final class SQLiteUtils {
 			if (cursor.moveToFirst()) {
 				do {
 					Model entity = (T) entityConstructor.newInstance();
-					entity.loadFromCursor(cursor);
+                    loadFromCursor(cursor, entity);
 					entities.add((T) entity);
 				}
 				while (cursor.moveToNext());
@@ -361,4 +366,263 @@ public final class SQLiteUtils {
         return whereString;
     }
 
+    /**
+     * Saves a model to the DB
+     * @param model
+     */
+    public static void save(Model model){
+        final SQLiteDatabase db = Cache.openDatabase();
+        final ContentValues values = new ContentValues();
+        Collection<Field> fields = model.getTableInfo().getFields();
+
+        for (Field field : fields) {
+            String fieldName = model.getTableInfo().getColumnName(field);
+            Class<?> fieldType = field.getType();
+
+            field.setAccessible(true);
+
+            try {
+                Object value = field.get(model);
+
+                if (value != null) {
+                    final TypeSerializer typeSerializer = Cache.getParserForType(fieldType);
+                    if (typeSerializer != null) {
+                        // serialize data
+                        value = typeSerializer.serialize(value);
+                        // set new object type
+                        if (value != null) {
+                            fieldType = value.getClass();
+                            // check that the serializer returned what it promised
+                            if (!fieldType.equals(typeSerializer.getSerializedType())) {
+                                AALog.w(String.format("TypeSerializer returned wrong type: expected a %s but got a %s",
+                                        typeSerializer.getSerializedType(), fieldType));
+                            }
+                        }
+                    }
+                }
+
+                // TODO: Find a smarter way to do this? This if block is necessary because we
+                // can't know the type until runtime.
+                if (value == null) {
+                    values.putNull(fieldName);
+                }
+                else if (fieldType.equals(Byte.class) || fieldType.equals(byte.class)) {
+                    values.put(fieldName, (Byte) value);
+                }
+                else if (fieldType.equals(Short.class) || fieldType.equals(short.class)) {
+                    values.put(fieldName, (Short) value);
+                }
+                else if (fieldType.equals(Integer.class) || fieldType.equals(int.class)) {
+                    values.put(fieldName, (Integer) value);
+                }
+                else if (fieldType.equals(Long.class) || fieldType.equals(long.class)) {
+                    values.put(fieldName, (Long) value);
+                }
+                else if (fieldType.equals(Float.class) || fieldType.equals(float.class)) {
+                    values.put(fieldName, (Float) value);
+                }
+                else if (fieldType.equals(Double.class) || fieldType.equals(double.class)) {
+                    values.put(fieldName, (Double) value);
+                }
+                else if (fieldType.equals(Boolean.class) || fieldType.equals(boolean.class)) {
+                    values.put(fieldName, (Boolean) value);
+                }
+                else if (fieldType.equals(Character.class) || fieldType.equals(char.class)) {
+                    values.put(fieldName, value.toString());
+                }
+                else if (fieldType.equals(String.class)) {
+                    values.put(fieldName, value.toString());
+                }
+                else if (fieldType.equals(Byte[].class) || fieldType.equals(byte[].class)) {
+                    values.put(fieldName, (byte[]) value);
+                }
+                else if (field.isAnnotationPresent(ForeignKey.class) && ReflectionUtils.isModel(fieldType)) {
+                    ForeignKey key = field.getAnnotation(ForeignKey.class);
+                    if(!key.name().equals("")){
+                        fieldName = field.getAnnotation(ForeignKey.class).name();
+                    }
+                    values.put(fieldName, ((Model) value).getId());
+                }
+                else if (ReflectionUtils.isSubclassOf(fieldType, Enum.class)) {
+                    values.put(fieldName, ((Enum<?>) value).name());
+                }
+            }
+            catch (IllegalArgumentException e) {
+                AALog.e(e.getClass().getName(), e);
+            }
+            catch (IllegalAccessException e) {
+                AALog.e(e.getClass().getName(), e);
+            }
+        }
+
+        if(!model.exists()){
+            model.setRowId(db.insert(model.getTableInfo().getTableName(), null, values));
+
+            for(Field field : model.getTableInfo().getPrimaryKeys()){
+                if(field.isAnnotationPresent(PrimaryKey.class) &&
+                        field.getAnnotation(PrimaryKey.class).type().equals(PrimaryKey.Type.AUTO_INCREMENT)){
+                    field.setAccessible(true);
+                    try {
+                        field.set(model, model.getRowId());
+                    } catch (Throwable e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        } else {
+            model.setRowId(db.update(model.getTableInfo().getTableName(), values, SQLiteUtils.getWhereStatement(model, model.getTableInfo()), null));
+        }
+
+        Cache.getContext().getContentResolver()
+                .notifyChange(ContentProvider.createUri(model.getTableInfo().getType(), model.getId()), null);
+    }
+
+    public static final void loadFromCursor(Cursor cursor, Model model){
+        Collection<Field> fields = model.getTableInfo().getFields();
+
+        for (Field field : fields) {
+            final String fieldName = model.getTableInfo().getColumnName(field);
+            Class<?> fieldType = field.getType();
+            final int columnIndex = cursor.getColumnIndex(fieldName);
+
+            if (columnIndex < 0) {
+                continue;
+            }
+
+            field.setAccessible(true);
+
+            try {
+                boolean columnIsNull = cursor.isNull(columnIndex);
+                TypeSerializer typeSerializer = Cache.getParserForType(fieldType);
+                Object value = null;
+
+                if (typeSerializer != null) {
+                    fieldType = typeSerializer.getSerializedType();
+                }
+
+                // TODO: Find a smarter way to do this? This if block is necessary because we
+                // can't know the type until runtime.
+                if (columnIsNull) {
+                    field = null;
+                }
+                else if (fieldType.equals(Byte.class) || fieldType.equals(byte.class)) {
+                    value = cursor.getInt(columnIndex);
+                }
+                else if (fieldType.equals(Short.class) || fieldType.equals(short.class)) {
+                    value = cursor.getInt(columnIndex);
+                }
+                else if (fieldType.equals(Integer.class) || fieldType.equals(int.class)) {
+                    value = cursor.getInt(columnIndex);
+                }
+                else if (fieldType.equals(Long.class) || fieldType.equals(long.class)) {
+                    value = cursor.getLong(columnIndex);
+                }
+                else if (fieldType.equals(Float.class) || fieldType.equals(float.class)) {
+                    value = cursor.getFloat(columnIndex);
+                }
+                else if (fieldType.equals(Double.class) || fieldType.equals(double.class)) {
+                    value = cursor.getDouble(columnIndex);
+                }
+                else if (fieldType.equals(Boolean.class) || fieldType.equals(boolean.class)) {
+                    value = cursor.getInt(columnIndex) != 0;
+                }
+                else if (fieldType.equals(Character.class) || fieldType.equals(char.class)) {
+                    value = cursor.getString(columnIndex).charAt(0);
+                }
+                else if (fieldType.equals(String.class)) {
+                    value = cursor.getString(columnIndex);
+                }
+                else if (fieldType.equals(Byte[].class) || fieldType.equals(byte[].class)) {
+                    value = cursor.getBlob(columnIndex);
+                }
+                else if (field.isAnnotationPresent(ForeignKey.class) && ReflectionUtils.isModel(fieldType)) {
+                    final String entityId = cursor.getString(columnIndex);
+                    final Class<? extends Model> entityType = (Class<? extends Model>) fieldType;
+
+                    Model entity = Cache.getEntity(entityType, entityId);
+                    if (entity == null) {
+                        entity = new Select().from(entityType).where(SQLiteUtils.getWhereFromEntityId(entityType, entityId)).executeSingle();
+                    }
+
+                    value = entity;
+                }
+                else if (ReflectionUtils.isSubclassOf(fieldType, Enum.class)) {
+                    @SuppressWarnings("rawtypes")
+                    final Class<? extends Enum> enumType = (Class<? extends Enum>) fieldType;
+                    value = Enum.valueOf(enumType, cursor.getString(columnIndex));
+                }
+
+                // Use a deserializer if one is available
+                if (typeSerializer != null && !columnIsNull) {
+                    value = typeSerializer.deserialize(value);
+                }
+
+                // Set the field name
+                if (value != null) {
+                    field.set(model, value);
+                }
+            }
+            catch (IllegalArgumentException e) {
+                AALog.e(e.getClass().getName(), e);
+            }
+            catch (IllegalAccessException e) {
+                AALog.e(e.getClass().getName(), e);
+            }
+            catch (SecurityException e) {
+                AALog.e(e.getClass().getName(), e);
+            }
+        }
+
+        if (model.getId() != null) {
+            Cache.addEntity(model);
+        }
+    }
+
+    /**
+     * Check whether the given model exists
+     * @param model
+     * @return
+     */
+    public static boolean exists(Model model){
+        return (new Select().from(model.getClass()).where(SQLiteUtils.getWhereStatement(model, model.getTableInfo())).executeSingle())!=null;
+    }
+
+    /**
+     * Deletes a model
+     * @param model
+     */
+    public static void delete(Model model){
+        Cache.openDatabase().delete(model.getTableInfo().getTableName(), SQLiteUtils.getWhereStatement(model, model.getTableInfo()), null);
+        Cache.removeEntity(model);
+
+        Cache.getContext().getContentResolver()
+                .notifyChange(ContentProvider.createUri(model.getTableInfo().getType(), model.getId()), null);
+    }
+
+    /**
+     * Attempts to use a {@link com.activeandroid.serializer.TypeSerializer} to convert the value from the DB into the object's value
+     * @param outValue - the object that gets converted
+     * @return
+     */
+    public static Object getTypeSerializedValue(Object outValue){
+        if (outValue != null) {
+            Class fieldType = outValue.getClass();
+
+            final TypeSerializer typeSerializer = Cache.getParserForType(fieldType);
+            if (typeSerializer != null) {
+                // serialize data
+                outValue = typeSerializer.serialize(outValue);
+                // set new object type
+                if (outValue != null) {
+                    fieldType = outValue.getClass();
+                    // check that the serializer returned what it promised
+                    if (!fieldType.equals(typeSerializer.getSerializedType())) {
+                        AALog.w(String.format("TypeSerializer returned wrong type: expected a %s but got a %s",
+                                typeSerializer.getSerializedType(), fieldType));
+                    }
+                }
+            }
+        }
+        return outValue;
+    }
 }
