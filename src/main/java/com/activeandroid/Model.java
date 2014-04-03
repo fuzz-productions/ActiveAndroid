@@ -92,6 +92,7 @@ public abstract class Model implements IModelInfo{
 		return mTableInfo!=null? mTableInfo.getTableName() + "@" + getId() : "No Table for: " + getClass() + "@" + getId();
 	}
 
+    @Override
     public long getRowId(){
         return mId;
     }
@@ -100,7 +101,13 @@ public abstract class Model implements IModelInfo{
         return mTableInfo;
     }
 
+    @Override
     public void setRowId(long id) {
         mId = id;
+    }
+
+    @Override
+    public String getTableName() {
+        return mTableInfo.getTableName();
     }
 }

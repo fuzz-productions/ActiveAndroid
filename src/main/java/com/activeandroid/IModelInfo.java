@@ -10,13 +10,16 @@ public interface IModelInfo {
 
     public String getId();
 
-    public void setRowId(String rowId);
+    public void setRowId(long rowId);
 
-    public String getRowId();
+    public long getRowId();
 
     public boolean exists();
 
     public void save();
 
     public void delete();
+
+    public String getTableName();
+
 }

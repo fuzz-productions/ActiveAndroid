@@ -37,7 +37,7 @@ public final class TableInfo {
 	// PRIVATE MEMBERS
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	private Class<? extends Model> mType;
+	private Class<? extends IModelInfo> mType;
 	private String mTableName;
 
 	private Map<Field, String> mColumnNames = new HashMap<Field, String>();
@@ -48,7 +48,7 @@ public final class TableInfo {
 	// CONSTRUCTORS
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	public TableInfo(Class<? extends Model> type) {
+	public TableInfo(Class<? extends IModelInfo> type) {
 		mType = type;
 
 		final Table tableAnnotation = type.getAnnotation(Table.class);
@@ -99,7 +99,7 @@ public final class TableInfo {
 	// PUBLIC METHODS
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	public Class<? extends Model> getType() {
+	public Class<? extends IModelInfo> getType() {
 		return mType;
 	}
 
@@ -107,9 +107,9 @@ public final class TableInfo {
 		return mTableName;
 	}
 
-	public Collection<Field> getFields() {
-		return mColumnNames.keySet();
-	}
+    public Field[] getFields(){
+        return mColumnNames.keySet().toArray(new Field[mColumnNames.size()]);
+    }
 
 	public String getColumnName(Field field) {
 		return mColumnNames.get(field);
@@ -120,7 +120,7 @@ public final class TableInfo {
 	//////////////////////////////////////////////////////////////////////////////////////
 
 	private Field getIdField(Class<?> type) {
-		if (type.equals(Model.class)) {
+		if (type.equals(IModelInfo.class)) {
 			try {
 				return type.getDeclaredField("mId");
 			}

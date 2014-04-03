@@ -20,7 +20,9 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 
+import com.activeandroid.IModelInfo;
 import com.activeandroid.Model;
+import com.activeandroid.serializer.ClassSerializer;
 import com.activeandroid.serializer.TypeSerializer;
 
 import java.lang.reflect.Field;
@@ -33,12 +35,16 @@ public final class ReflectionUtils {
 	//////////////////////////////////////////////////////////////////////////////////////
 
 	public static boolean isModel(Class<?> type) {
-		return isSubclassOf(type, Model.class);
+		return isSubclassOf(type, IModelInfo.class);
 	}
 
 	public static boolean isTypeSerializer(Class<?> type) {
 		return isSubclassOf(type, TypeSerializer.class);
 	}
+
+    public static boolean isTypeClassSerializer(Class<?> type){
+        return isSubclassOf(type, ClassSerializer.class);
+    }
 
 	// Meta-data
 

@@ -18,37 +18,29 @@ package com.activeandroid;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import android.content.Context;
 
+import com.activeandroid.serializer.ClassSerializer;
 import com.activeandroid.serializer.TypeSerializer;
 import com.activeandroid.util.AALog;
 import com.activeandroid.util.ReflectionUtils;
 
 public class Configuration {
-	//////////////////////////////////////////////////////////////////////////////////////
-	// PRIVATE MEMBERS
-	//////////////////////////////////////////////////////////////////////////////////////
 
 	private Context mContext;
 	private String mDatabaseName;
 	private int mDatabaseVersion;
-	private List<Class<? extends Model>> mModelClasses;
+	private List<Class<? extends IModelInfo>> mModelClasses;
 	private List<Class<? extends TypeSerializer>> mTypeSerializers;
-	private int mCacheSize;
-
-	//////////////////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////////////////
+    private List<Class<? extends ClassSerializer>> mClassSerializers;
+    private int mCacheSize;
 
 	private Configuration(Context context) {
 		mContext = context;
 	}
-
-	//////////////////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////////////////
 
 	public Context getContext() {
 		return mContext;
@@ -62,13 +54,17 @@ public class Configuration {
 		return mDatabaseVersion;
 	}
 
-	public List<Class<? extends Model>> getModelClasses() {
+	public List<Class<? extends IModelInfo>> getModelClasses() {
 		return mModelClasses;
 	}
 
 	public List<Class<? extends TypeSerializer>> getTypeSerializers() {
 		return mTypeSerializers;
 	}
+
+    public List<Class<? extends ClassSerializer>> getClassSerializers(){
+        return mClassSerializers;
+    }
 
 	public int getCacheSize() {
 		return mCacheSize;
@@ -78,47 +74,30 @@ public class Configuration {
 		return mModelClasses != null && mModelClasses.size() > 0;
 	}
 
-	//////////////////////////////////////////////////////////////////////////////////////
-	// INNER CLASSES
-	//////////////////////////////////////////////////////////////////////////////////////
-
 	public static class Builder {
-		//////////////////////////////////////////////////////////////////////////////////////
-		// PRIVATE CONSTANTS
-		//////////////////////////////////////////////////////////////////////////////////////
 
 		private static final String AA_DB_NAME = "AA_DB_NAME";
 		private static final String AA_DB_VERSION = "AA_DB_VERSION";
 		private final static String AA_MODELS = "AA_MODELS";
 		private final static String AA_SERIALIZERS = "AA_SERIALIZERS";
+        private final static String AA_CLASS_SERIALIZERS = "AA_CLASS_SERIALIZERS";
 
 		private static final int DEFAULT_CACHE_SIZE = 1024;
 		private static final String DEFAULT_DB_NAME = "Application.db";
-
-		//////////////////////////////////////////////////////////////////////////////////////
-		// PRIVATE MEMBERS
-		//////////////////////////////////////////////////////////////////////////////////////
 
 		private Context mContext;
 
 		private Integer mCacheSize;
 		private String mDatabaseName;
 		private Integer mDatabaseVersion;
-		private List<Class<? extends Model>> mModelClasses;
+		private List<Class<? extends IModelInfo>> mModelClasses;
 		private List<Class<? extends TypeSerializer>> mTypeSerializers;
-
-		//////////////////////////////////////////////////////////////////////////////////////
-		// CONSTRUCTORS
-		//////////////////////////////////////////////////////////////////////////////////////
+        private List<Class<? extends ClassSerializer>> mClassSerializers;
 
 		public Builder(Context context) {
 			mContext = context.getApplicationContext();
 			mCacheSize = DEFAULT_CACHE_SIZE;
 		}
-
-		//////////////////////////////////////////////////////////////////////////////////////
-		// PUBLIC METHODS
-		//////////////////////////////////////////////////////////////////////////////////////
 
 		public Builder setCacheSize(int cacheSize) {
 			mCacheSize = cacheSize;
@@ -135,25 +114,25 @@ public class Configuration {
 			return this;
 		}
 
-		public Builder addModelClass(Class<? extends Model> modelClass) {
+		public Builder addModelClass(Class<? extends IModelInfo> modelClass) {
 			if (mModelClasses == null) {
-				mModelClasses = new ArrayList<Class<? extends Model>>();
+				mModelClasses = new ArrayList<Class<? extends IModelInfo>>();
 			}
 
 			mModelClasses.add(modelClass);
 			return this;
 		}
 
-		public Builder addModelClasses(Class<? extends Model>... modelClasses) {
+		public Builder addModelClasses(Class<? extends IModelInfo>... modelClasses) {
 			if (mModelClasses == null) {
-				mModelClasses = new ArrayList<Class<? extends Model>>();
+				mModelClasses = new ArrayList<Class<? extends IModelInfo>>();
 			}
 
 			mModelClasses.addAll(Arrays.asList(modelClasses));
 			return this;
 		}
 
-		public Builder setModelClasses(Class<? extends Model>... modelClasses) {
+		public Builder setModelClasses(Class<? extends IModelInfo>... modelClasses) {
 			mModelClasses = Arrays.asList(modelClasses);
 			return this;
 		}
@@ -180,6 +159,29 @@ public class Configuration {
 			mTypeSerializers = Arrays.asList(typeSerializers);
 			return this;
 		}
+
+        public Builder addClassSerializer(Class<? extends ClassSerializer> typeSerializer) {
+            if (mClassSerializers == null) {
+                mClassSerializers = new ArrayList<Class<? extends ClassSerializer>>();
+            }
+
+            mClassSerializers.add(typeSerializer);
+            return this;
+        }
+
+        public Builder addClassSerializers(Class<? extends ClassSerializer>... typeSerializers) {
+            if (mClassSerializers == null) {
+                mClassSerializers = new ArrayList<Class<? extends ClassSerializer>>();
+            }
+
+            mClassSerializers.addAll(Arrays.asList(typeSerializers));
+            return this;
+        }
+
+        public Builder setClassSerializers(Class<? extends ClassSerializer>... typeSerializers) {
+            mClassSerializers = Arrays.asList(typeSerializers);
+            return this;
+        }
 
 		public Configuration create() {
 			Configuration configuration = new Configuration(mContext);
@@ -223,6 +225,15 @@ public class Configuration {
 				}
 			}
 
+            if(mClassSerializers!=null){
+                configuration.mClassSerializers = mClassSerializers;
+            } else{
+                final String classSerializerList = ReflectionUtils.getMetaData(mContext, AA_CLASS_SERIALIZERS);
+                if(classSerializerList!=null){
+                    configuration.mClassSerializers = loadClassSerializerList(classSerializerList.split(","));
+                }
+            }
+
 			return configuration;
 		}
 
@@ -250,8 +261,8 @@ public class Configuration {
 			return aaVersion;
 		}
 
-		private List<Class<? extends Model>> loadModelList(String[] models) {
-			final List<Class<? extends Model>> modelClasses = new ArrayList<Class<? extends Model>>();
+		private List<Class<? extends IModelInfo>> loadModelList(String[] models) {
+			final List<Class<? extends IModelInfo>> modelClasses = new ArrayList<Class<? extends IModelInfo>>();
 			final ClassLoader classLoader = mContext.getClass().getClassLoader();
 			for (String model : models) {
 				model = ensurePackageInName(model);
@@ -289,6 +300,26 @@ public class Configuration {
 
 			return typeSerializers;
 		}
+
+        private List<Class<? extends ClassSerializer>> loadClassSerializerList(String[] serializers) {
+            final List<Class<? extends ClassSerializer>> typeSerializers = new ArrayList<Class<? extends ClassSerializer>>();
+            final ClassLoader classLoader = mContext.getClass().getClassLoader();
+            for (String serializer : serializers) {
+                serializer = ensurePackageInName(serializer);
+
+                try {
+                    Class serializerClass = Class.forName(serializer, false, classLoader);
+                    if (ReflectionUtils.isTypeClassSerializer(serializerClass)) {
+                        typeSerializers.add(serializerClass);
+                    }
+                }
+                catch (ClassNotFoundException e) {
+                    AALog.e("Couldn't create class.", e);
+                }
+            }
+
+            return typeSerializers;
+        }
 
 		private String ensurePackageInName(String name) {
 			String packageName = mContext.getPackageName();

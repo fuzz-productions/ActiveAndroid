@@ -22,6 +22,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.util.LruCache;
 
+import com.activeandroid.serializer.ClassSerializer;
 import com.activeandroid.serializer.TypeSerializer;
 import com.activeandroid.util.AALog;
 
@@ -41,7 +42,7 @@ public final class Cache {
 	private static ModelInfo sModelInfo;
 	private static DatabaseHelper sDatabaseHelper;
 
-	private static LruCache<String, Model> sEntities;
+	private static LruCache<String, IModelInfo> sEntities;
 
 	private static boolean sIsInitialized = false;
 
@@ -70,7 +71,7 @@ public final class Cache {
 		// actually used, however at this point it seems like the reflection
 		// required would be too costly to be of any benefit. We'll just set a max
 		// object size instead.
-		sEntities = new LruCache<String, Model>(configuration.getCacheSize());
+		sEntities = new LruCache<String, IModelInfo>(configuration.getCacheSize());
 
 		openDatabase();
 
@@ -114,19 +115,19 @@ public final class Cache {
 
 	// Entity cache
 
-	public static String getIdentifier(Class<? extends Model> type, String entityId) {
+	public static String getIdentifier(Class<? extends IModelInfo> type, String entityId) {
 		return getTableName(type) + "@" + entityId;
 	}
 
-	public static String getIdentifier(Model entity) {
+	public static String getIdentifier(IModelInfo entity) {
 		return getIdentifier(entity.getClass(), entity.getId());
 	}
 
-	public static synchronized void addEntity(Model entity) {
+	public static synchronized void addEntity(IModelInfo entity) {
 		sEntities.put(getIdentifier(entity), entity);
 	}
 
-	public static synchronized Model getEntity(Class<? extends Model> type, String entityId) {
+	public static synchronized IModelInfo getEntity(Class<? extends IModelInfo> type, String entityId) {
 		return sEntities.get(getIdentifier(type, entityId));
 	}
 
@@ -140,7 +141,7 @@ public final class Cache {
 		return sModelInfo.getTableInfos();
 	}
 
-	public static synchronized TableInfo getTableInfo(Class<? extends Model> type) {
+	public static synchronized TableInfo getTableInfo(Class<? extends IModelInfo> type) {
 		return sModelInfo.getTableInfo(type);
 	}
 
@@ -148,7 +149,11 @@ public final class Cache {
 		return sModelInfo.getTypeSerializer(type);
 	}
 
-	public static synchronized String getTableName(Class<? extends Model> type) {
+	public static synchronized String getTableName(Class<? extends IModelInfo> type) {
 		return sModelInfo.getTableInfo(type).getTableName();
 	}
+
+    public static synchronized ClassSerializer getClassSerializerForType(Class<?> type){
+        return sModelInfo.getClassSerializer(type);
+    }
 }

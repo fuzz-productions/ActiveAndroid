@@ -31,6 +31,8 @@ import android.content.Context;
 
 import com.activeandroid.annotation.Ignore;
 import com.activeandroid.serializer.CalendarSerializer;
+import com.activeandroid.serializer.ClassSerializer;
+import com.activeandroid.serializer.ModelClassSerializer;
 import com.activeandroid.serializer.SqlDateSerializer;
 import com.activeandroid.serializer.TypeSerializer;
 import com.activeandroid.serializer.UtilDateSerializer;
@@ -43,7 +45,7 @@ final class ModelInfo {
 	// PRIVATE METHODS
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	private Map<Class<? extends Model>, TableInfo> mTableInfos = new HashMap<Class<? extends Model>, TableInfo>();
+	private Map<Class<? extends IModelInfo>, TableInfo> mTableInfos = new HashMap<Class<? extends IModelInfo>, TableInfo>();
 	private Map<Class<?>, TypeSerializer> mTypeSerializers = new HashMap<Class<?>, TypeSerializer>() {
 		{
 			put(Calendar.class, new CalendarSerializer());
@@ -51,6 +53,12 @@ final class ModelInfo {
 			put(java.util.Date.class, new UtilDateSerializer());
 		}
 	};
+
+    private Map<Class<?>, ClassSerializer> mClassSerializers = new HashMap<Class<?>, ClassSerializer>() {
+        {
+            put(Model.class, new ModelClassSerializer());
+        }
+    };
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// CONSTRUCTORS
@@ -77,13 +85,17 @@ final class ModelInfo {
 		return mTableInfos.values();
 	}
 
-	public TableInfo getTableInfo(Class<? extends Model> type) {
+	public TableInfo getTableInfo(Class<? extends IModelInfo> type) {
 		return mTableInfos.get(type);
 	}
 
 	public TypeSerializer getTypeSerializer(Class<?> type) {
 		return mTypeSerializers.get(type);
 	}
+
+    public ClassSerializer getClassSerializer(Class<?> type){
+        return mClassSerializers.get(type);
+    }
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// PRIVATE METHODS
@@ -94,9 +106,9 @@ final class ModelInfo {
 			return false;
 		}
 
-		final List<Class<? extends Model>> models = configuration.getModelClasses();
+		final List<Class<? extends IModelInfo>> models = configuration.getModelClasses();
 		if (models != null) {
-			for (Class<? extends Model> model : models) {
+			for (Class<? extends IModelInfo> model : models) {
 				mTableInfos.put(model, new TableInfo(model));
 			}
 		}
@@ -116,6 +128,22 @@ final class ModelInfo {
 				}
 			}
 		}
+
+        final List<Class<? extends ClassSerializer>> classSerializers = configuration.getClassSerializers();
+        if(classSerializers!=null){
+            for (Class<? extends ClassSerializer> typeSerializer : classSerializers) {
+                try {
+                    ClassSerializer instance = typeSerializer.newInstance();
+                    mClassSerializers.put(instance.getTableType(), instance);
+                }
+                catch (InstantiationException e) {
+                    AALog.e("Couldn't instantiate TypeSerializer.", e);
+                }
+                catch (IllegalAccessException e) {
+                    AALog.e("IllegalAccessException", e);
+                }
+            }
+        }
 
 		return true;
 	}
@@ -186,13 +214,17 @@ final class ModelInfo {
 				Class<?> discoveredClass = Class.forName(className, false, classLoader);
 				if (ReflectionUtils.isModel(discoveredClass) && !discoveredClass.isAnnotationPresent(Ignore.class)) {
 					@SuppressWarnings("unchecked")
-					Class<? extends Model> modelClass = (Class<? extends Model>) discoveredClass;
+					Class<? extends IModelInfo> modelClass = (Class<? extends IModelInfo>) discoveredClass;
 					mTableInfos.put(modelClass, new TableInfo(modelClass));
 				}
 				else if (ReflectionUtils.isTypeSerializer(discoveredClass) && !discoveredClass.isAnnotationPresent(Ignore.class)) {
 					TypeSerializer instance = (TypeSerializer) discoveredClass.newInstance();
 					mTypeSerializers.put(instance.getDeserializedType(), instance);
 				}
+                else if(ReflectionUtils.isTypeClassSerializer(discoveredClass) && !discoveredClass.isAnnotationPresent(Ignore.class)){
+                    ClassSerializer instance = (ClassSerializer) discoveredClass.newInstance();
+                    mClassSerializers.put(instance.getTableType(), instance);
+                }
 			}
 			catch (ClassNotFoundException e) {
 				AALog.e("Couldn't create class.", e);
