@@ -47,7 +47,7 @@ public abstract class ClassSerializer<OBJECT_CLASS extends IModelInfo> {
     }
 
     public Object getFieldValue(OBJECT_CLASS object, int position){
-        TableInfo tableInfo = Cache.getTableInfo(object.getClass());
+        TableInfo tableInfo = Cache.getTableInfo(object.getModelClass());
         Field field = tableInfo.getFields()[position];
         field.setAccessible(true);
 
@@ -113,12 +113,17 @@ public abstract class ClassSerializer<OBJECT_CLASS extends IModelInfo> {
         return tableInfo.getColumnName(tableInfo.getPrimaryKeys().get(position));
     }
 
+    public String getActualPrimaryFieldName(Class<? extends IModelInfo> iModelInfo, int position){
+        TableInfo tableInfo = Cache.getTableInfo(iModelInfo);
+        return tableInfo.getPrimaryKeys().get(position).getName();
+    }
+
     public int getPrimaryFieldCount(Class<? extends IModelInfo> iModelInfo){
         return Cache.getTableInfo(iModelInfo).getPrimaryKeys().size();
     }
 
     public Class<?> getFieldType(OBJECT_CLASS iModelInfo, int position){
-        return Cache.getTableInfo(iModelInfo.getClass()).getFields()[position].getType();
+        return Cache.getTableInfo(iModelInfo.getModelClass()).getFields()[position].getType();
     }
 
     public void applyPrimaryKeys(OBJECT_CLASS model){
@@ -151,4 +156,15 @@ public abstract class ClassSerializer<OBJECT_CLASS extends IModelInfo> {
     }
 
     public abstract Class<?> getTableType();
+
+    public Object getPrimaryFieldValue(OBJECT_CLASS iModelInfo, int position, String primaryFieldName) {
+        Object value = null;
+        try {
+            Field field = Cache.getTableInfo(iModelInfo.getModelClass()).getPrimaryKeys().get(position);
+            field.setAccessible(true);
+            value = field.get(iModelInfo);
+        } catch (IllegalAccessException e) {
+        }
+        return value;
+    }
 }

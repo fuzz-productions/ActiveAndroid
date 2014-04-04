@@ -91,7 +91,7 @@ public abstract class Model implements IModelInfo{
     }
 
     @Override
-    public Class<?> getModelClass() {
+    public Class<? extends IModelInfo> getModelClass() {
         return getClass();
     }
 }

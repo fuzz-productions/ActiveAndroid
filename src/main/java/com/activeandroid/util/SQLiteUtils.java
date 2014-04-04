@@ -294,33 +294,32 @@ public final class SQLiteUtils {
 
         final StringBuilder where = new StringBuilder();
         for(int i = 0 ; i < count; i++){
-            where.append(classSerializer.getPrimaryFieldName(model.getModelClass(), i));
-            where.append("=?");
-
-            if(i < count-1){
-                where.append(" AND ");
-            }
-        }
-
-        String sql = where.toString();
-
-        for(int i = 0; i < count; i++){
             try {
-                Object object = classSerializer.getFieldValue(model, i);
-                if(object==null){
-                    throw new PrimaryKeyCannotBeNullException("The primary key: " + classSerializer.getPrimaryFieldName(model.getModelClass(), i) + "from " + model.getTableName()+ " cannot be null.");
-                } else if(object instanceof Number){
-                    sql = sql.replaceFirst("\\?", object.toString());
+                String actualName = classSerializer.getActualPrimaryFieldName(model.getModelClass(), i);
+                String primaryName = classSerializer.getPrimaryFieldName(model.getModelClass(), i);
+                Object object = classSerializer.getPrimaryFieldValue(model, i, actualName);
+                where.append(primaryName);
+                where.append("=");
+
+                if (object == null) {
+                    throw new PrimaryKeyCannotBeNullException("The primary key: " + actualName + "from " + model.getTableName() + " cannot be null.");
+                } else if (object instanceof Number) {
+                    where.append(object.toString());
                 } else {
                     String escaped = DatabaseUtils.sqlEscapeString(object.toString());
 
-                    sql = sql.replaceFirst("\\?", escaped);
+                    where.append(escaped);
                 }
-            } catch (Throwable e) {
+
+                if (i < count - 1) {
+                    where.append(" AND ");
+                }
+            } catch (Throwable e){
                 throw new RuntimeException(e);
             }
         }
-        return sql;
+
+        return where.toString();
     }
 
     public static String getWhereFromEntityId(IModelInfo model, String entityId){
@@ -368,15 +367,19 @@ public final class SQLiteUtils {
             serializer.serializeField(values, model, i);
         }
 
-        if(!model.exists()){
-            model.setRowId(db.insert(model.getTableName(), null, values));
-            serializer.applyPrimaryKeys(model);
-        } else {
-            model.setRowId(db.update(model.getTableName(), values, SQLiteUtils.getWhereStatement(serializer, model), null));
-        }
+        if(values.size()>0) {
+            if (!model.exists()) {
+                model.setRowId(db.insert(model.getTableName(), null, values));
+                serializer.applyPrimaryKeys(model);
+            } else {
+                model.setRowId(db.update(model.getTableName(), values, SQLiteUtils.getWhereStatementWithoutValues(serializer, model.getModelClass()), null));
+            }
 
-        Cache.getContext().getContentResolver()
-                .notifyChange(ContentProvider.createUri(serializer.getTableType(model), model.getId()), null);
+            Cache.getContext().getContentResolver()
+                    .notifyChange(ContentProvider.createUri(serializer.getTableType(model), model.getId()), null);
+        } else{
+            AALog.e("SQLiteUtils", "IModelInfo: " + model.getClass() + " for class serializer: " + serializer.getClass() + " had empty content values");
+        }
     }
 
     public static final void loadFromCursor(Cursor cursor, IModelInfo model, ClassSerializer classSerializer){
@@ -447,9 +450,6 @@ public final class SQLiteUtils {
                                 typeSerializer.getSerializedType(), fieldType));
                     }
                 }
-            } else if(IModelInfo.class.isAssignableFrom(fieldType)){
-                IModelInfo iModelInfo = (IModelInfo) outValue;
-                iModelInfo.save();
             }
         }
         return outValue;
@@ -463,22 +463,22 @@ public final class SQLiteUtils {
                 values.putNull(fieldName);
             }
             else if (fieldType.equals(Byte.class) || fieldType.equals(byte.class)) {
-                values.put(fieldName, (Byte) value);
+                values.put(fieldName, ((Number) value).byteValue());
             }
             else if (fieldType.equals(Short.class) || fieldType.equals(short.class)) {
-                values.put(fieldName, (Short) value);
+                values.put(fieldName, ((Number) value).shortValue());
             }
             else if (fieldType.equals(Integer.class) || fieldType.equals(int.class)) {
-                values.put(fieldName, (Integer) value);
+                values.put(fieldName, ((Number) value).intValue());
             }
             else if (fieldType.equals(Long.class) || fieldType.equals(long.class)) {
-                values.put(fieldName, (Long) value);
+                values.put(fieldName, ((Number) value).longValue());
             }
             else if (fieldType.equals(Float.class) || fieldType.equals(float.class)) {
-                values.put(fieldName, (Float) value);
+                values.put(fieldName, ((Number) value).floatValue());
             }
             else if (fieldType.equals(Double.class) || fieldType.equals(double.class)) {
-                values.put(fieldName, (Double) value);
+                values.put(fieldName, ((Number) value).doubleValue());
             }
             else if (fieldType.equals(Boolean.class) || fieldType.equals(boolean.class)) {
                 values.put(fieldName, (Boolean) value);
