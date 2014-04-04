@@ -16,7 +16,6 @@ package com.activeandroid;
  * limitations under the License.
  */
 
-import com.activeandroid.content.ContentProvider;
 import com.activeandroid.query.Select;
 import com.activeandroid.util.SQLiteUtils;
 
@@ -24,25 +23,13 @@ import java.util.List;
 
 @SuppressWarnings("unchecked")
 public abstract class Model implements IModelInfo{
-	//////////////////////////////////////////////////////////////////////////////////////
-	// PRIVATE MEMBERS
-	//////////////////////////////////////////////////////////////////////////////////////
-
 	private TableInfo mTableInfo;
-
-	//////////////////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////////////////
 
 	public Model() {
 		mTableInfo = Cache.getTableInfo(getClass());
 	}
 
     private long mId;
-
-	//////////////////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Use This method to return the values of your primary key, must be separated by comma delimiter in order of declaration
@@ -59,21 +46,17 @@ public abstract class Model implements IModelInfo{
 
     @Override
 	public final void save() {
-        SQLiteUtils.save(this);
+        SQLiteUtils.save(Cache.getClassSerializerForType(Model.class), this);
 	}
 
     @Override
     public boolean exists(){
-        return SQLiteUtils.exists(this);
+        return SQLiteUtils.exists((Class<Model>) getClass(), this);
     }
 
    /* public void update(){
 
     }*/
-
-	//////////////////////////////////////////////////////////////////////////////////////
-	// PROTECTED METHODS
-	//////////////////////////////////////////////////////////////////////////////////////
 
     protected final <T extends Model> List<T> getManyFromField(Class<T> type,Object field, String foreignKey){
         return new Select().from(type).where(Cache.getTableName(type) + "." + foreignKey + "=?", field).execute();
@@ -82,10 +65,6 @@ public abstract class Model implements IModelInfo{
     protected final <T extends Model> List<T> getManyFromFieldWithSort(Class<T> type,Object field, String foreignKey, String sort){
         return new Select().from(type).orderBy(sort).where(Cache.getTableName(type) + "." + foreignKey + "=?", field).execute();
     }
-
-	//////////////////////////////////////////////////////////////////////////////////////
-	// OVERRIDEN METHODS
-	//////////////////////////////////////////////////////////////////////////////////////
 
 	@Override
 	public String toString() {
@@ -109,5 +88,10 @@ public abstract class Model implements IModelInfo{
     @Override
     public String getTableName() {
         return mTableInfo.getTableName();
+    }
+
+    @Override
+    public Class<?> getModelClass() {
+        return getClass();
     }
 }

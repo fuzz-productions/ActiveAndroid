@@ -54,7 +54,7 @@ final class ModelInfo {
 		}
 	};
 
-    private Map<Class<?>, ClassSerializer> mClassSerializers = new HashMap<Class<?>, ClassSerializer>() {
+    private Map<Class<? extends IModelInfo>, ClassSerializer> mClassSerializers = new HashMap<Class<? extends IModelInfo>, ClassSerializer>() {
         {
             put(Model.class, new ModelClassSerializer());
         }
@@ -93,7 +93,7 @@ final class ModelInfo {
 		return mTypeSerializers.get(type);
 	}
 
-    public ClassSerializer getClassSerializer(Class<?> type){
+    public ClassSerializer getClassSerializer(Class<? extends IModelInfo> type){
         return mClassSerializers.get(type);
     }
 
@@ -189,10 +189,16 @@ final class ModelInfo {
 		else {
 			String className = path.getName();
 
+            //ignore android system classes
+            if(className.startsWith("android.")){
+                return;
+            }
+
 			// Robolectric fallback
 			if (!path.getPath().equals(className)) {
 				className = path.getPath();
 
+                //we want to ignore android system classes for checking
 				if (className.endsWith(".class")) {
 					className = className.substring(0, className.length() - 6);
 				}
@@ -212,7 +218,8 @@ final class ModelInfo {
 
 			try {
 				Class<?> discoveredClass = Class.forName(className, false, classLoader);
-				if (ReflectionUtils.isModel(discoveredClass) && !discoveredClass.isAnnotationPresent(Ignore.class)) {
+				if (ReflectionUtils.isModel(discoveredClass) && !discoveredClass.isAnnotationPresent(Ignore.class)
+                        && !discoveredClass.equals(IModelInfo.class) && !discoveredClass.equals(Model.class)) {
 					@SuppressWarnings("unchecked")
 					Class<? extends IModelInfo> modelClass = (Class<? extends IModelInfo>) discoveredClass;
 					mTableInfos.put(modelClass, new TableInfo(modelClass));

@@ -19,6 +19,7 @@ package com.activeandroid.query;
 import android.database.DatabaseUtils;
 import android.text.TextUtils;
 import com.activeandroid.Cache;
+import com.activeandroid.IModelInfo;
 import com.activeandroid.Model;
 import com.activeandroid.query.Join.JoinType;
 import com.activeandroid.util.AALog;
@@ -31,7 +32,7 @@ import java.util.List;
 public final class From implements Sqlable {
 	private Sqlable mQueryBase;
 
-	private Class<? extends Model> mType;
+	private Class<? extends IModelInfo> mType;
 	private String mAlias;
 	private List<Join> mJoins;
 	private String mWhere;
@@ -43,7 +44,7 @@ public final class From implements Sqlable {
 
 	private List<Object> mArguments;
 
-	public From(Class<? extends Model> table, Sqlable queryBase) {
+	public From(Class<? extends IModelInfo> table, Sqlable queryBase) {
 		mType = table;
 		mJoins = new ArrayList<Join>();
 		mQueryBase = queryBase;
@@ -214,7 +215,7 @@ public final class From implements Sqlable {
         }
     }
 
-	public <T extends Model> List<T> execute() {
+	public <T extends IModelInfo> List<T> execute() {
 		if (mQueryBase instanceof Select) {
 			return SQLiteUtils.rawQuery(mType, toSql(), getArguments());
 		}
@@ -224,7 +225,7 @@ public final class From implements Sqlable {
 		}
 	}
 
-	public <T extends Model> T executeSingle() {
+	public <T extends IModelInfo> T executeSingle() {
 		if (mQueryBase instanceof Select) {
 			limit(1);
 			return SQLiteUtils.rawQuerySingle(mType, toSql(), getArguments());

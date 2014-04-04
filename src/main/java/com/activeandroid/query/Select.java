@@ -18,6 +18,7 @@ package com.activeandroid.query;
 
 import android.text.TextUtils;
 
+import com.activeandroid.IModelInfo;
 import com.activeandroid.Model;
 
 public final class Select implements Sqlable {
@@ -64,7 +65,7 @@ public final class Select implements Sqlable {
         return this;
     }
 
-	public From from(Class<? extends Model> table) {
+	public From from(Class<? extends IModelInfo> table) {
 		return new From(table, this);
 	}
 

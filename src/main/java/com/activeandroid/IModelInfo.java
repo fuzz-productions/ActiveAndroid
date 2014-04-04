@@ -22,4 +22,6 @@ public interface IModelInfo {
 
     public String getTableName();
 
+    public Class<? extends IModelInfo> getModelClass();
+
 }

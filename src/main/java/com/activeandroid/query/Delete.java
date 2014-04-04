@@ -16,13 +16,14 @@ package com.activeandroid.query;
  * limitations under the License.
  */
 
+import com.activeandroid.IModelInfo;
 import com.activeandroid.Model;
 
 public final class Delete implements Sqlable {
 	public Delete() {
 	}
 
-	public From from(Class<? extends Model> table) {
+	public From from(Class<? extends IModelInfo> table) {
 		return new From(table, this);
 	}
 

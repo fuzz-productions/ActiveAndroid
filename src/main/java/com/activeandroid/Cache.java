@@ -46,16 +46,8 @@ public final class Cache {
 
 	private static boolean sIsInitialized = false;
 
-	//////////////////////////////////////////////////////////////////////////////////////
-	// CONSTRUCTORS
-	//////////////////////////////////////////////////////////////////////////////////////
-
 	private Cache() {
 	}
-
-	//////////////////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////////////////
 
 	public static synchronized void initialize(Configuration configuration) {
 		if (sIsInitialized) {
@@ -131,7 +123,7 @@ public final class Cache {
 		return sEntities.get(getIdentifier(type, entityId));
 	}
 
-	public static synchronized void removeEntity(Model entity) {
+	public static synchronized void removeEntity(IModelInfo entity) {
 		sEntities.remove(getIdentifier(entity));
 	}
 
@@ -153,7 +145,11 @@ public final class Cache {
 		return sModelInfo.getTableInfo(type).getTableName();
 	}
 
-    public static synchronized ClassSerializer getClassSerializerForType(Class<?> type){
+    public static synchronized ClassSerializer getClassSerializerForType(Class<? extends IModelInfo> type){
+        //if we have model we load the default
+        if(Model.class.isAssignableFrom(type)){
+            return sModelInfo.getClassSerializer(Model.class);
+        }
         return sModelInfo.getClassSerializer(type);
     }
 }

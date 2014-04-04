@@ -1,5 +1,6 @@
 package com.activeandroid.interfaces;
 
+import com.activeandroid.IModelInfo;
 import com.activeandroid.Model;
 
 /**
@@ -8,7 +9,7 @@ import com.activeandroid.Model;
 * Contributors:
 * Description:
 */
-public interface ObjectRequester<OBJECT_CLASS extends Model>{
+public interface ObjectRequester<OBJECT_CLASS extends IModelInfo>{
     /**
      * Implement this method to perform a request if the object does not exist in the DB
      * @param objectReceiver

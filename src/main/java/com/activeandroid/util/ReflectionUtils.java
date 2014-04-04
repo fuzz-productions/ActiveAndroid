@@ -35,7 +35,7 @@ public final class ReflectionUtils {
 	//////////////////////////////////////////////////////////////////////////////////////
 
 	public static boolean isModel(Class<?> type) {
-		return isSubclassOf(type, IModelInfo.class);
+		return doesImplement(type, IModelInfo.class);
 	}
 
 	public static boolean isTypeSerializer(Class<?> type) {
@@ -65,9 +65,14 @@ public final class ReflectionUtils {
 		return null;
 	}
 
-	//////////////////////////////////////////////////////////////////////////////////////
-	// PRIVATE METHODS
-	//////////////////////////////////////////////////////////////////////////////////////
+    public static boolean doesImplement(Class<?> type, Class<?> superClass){
+        if(type==null){
+            return false;
+        } else if(superClass.isAssignableFrom(type)){
+            return true;
+        }
+        return doesImplement(type.getSuperclass(), superClass);
+    }
 
 	public static boolean isSubclassOf(Class<?> type, Class<?> superClass) {
 		if (type.getSuperclass() != null) {

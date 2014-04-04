@@ -3,7 +3,7 @@ package com.activeandroid.runtime;
 import android.os.Looper;
 
 import com.activeandroid.ActiveAndroid;
-import com.activeandroid.Model;
+import com.activeandroid.IModelInfo;
 import com.activeandroid.manager.SingleDBManager;
 import com.activeandroid.util.AALog;
 
@@ -27,12 +27,12 @@ public class DBBatchSaveQueue extends Thread{
         return mBatchSaveQueue;
     }
 
-    private final ArrayList<Model> mModels;
+    private final ArrayList<IModelInfo> mModels;
 
     public DBBatchSaveQueue(){
         super("DBBatchSaveQueue");
 
-        mModels = new ArrayList<Model>();
+        mModels = new ArrayList<IModelInfo>();
     }
 
     @Override
@@ -41,9 +41,9 @@ public class DBBatchSaveQueue extends Thread{
         Looper.prepare();
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
         while (true){
-            final ArrayList<Model> tmpModels;
+            final ArrayList<IModelInfo> tmpModels;
             synchronized (mModels){
-                tmpModels = new ArrayList<Model>(mModels);
+                tmpModels = new ArrayList<IModelInfo>(mModels);
                 mModels.clear();
             }
             if(tmpModels.size()>0) {
@@ -55,7 +55,7 @@ public class DBBatchSaveQueue extends Thread{
                         ActiveAndroid.beginTransaction();
                         try {
                             AALog.d("DBBatchSaveQueue", "Executing batch save of: " + tmpModels.size() + " on :" + Thread.currentThread().getName());
-                            for (Model model: tmpModels) {
+                            for (IModelInfo model: tmpModels) {
                                 model.save();
                             }
                             ActiveAndroid.setTransactionSuccessful();
@@ -77,19 +77,19 @@ public class DBBatchSaveQueue extends Thread{
         }
     }
 
-    public void add(final Model model){
+    public void add(final IModelInfo model){
         synchronized (mModels){
             mModels.add(model);
         }
     }
 
-    public <COLLECTION_CLASS extends Collection<OBJECT_CLASS>, OBJECT_CLASS extends Model> void addAll(final COLLECTION_CLASS list){
+    public <COLLECTION_CLASS extends Collection<OBJECT_CLASS>, OBJECT_CLASS extends IModelInfo> void addAll(final COLLECTION_CLASS list){
         synchronized (mModels){
             mModels.addAll(list);
         }
     }
 
-    public void remove(final Model model){
+    public void remove(final IModelInfo model){
         synchronized (mModels){
             mModels.remove(model);
         }

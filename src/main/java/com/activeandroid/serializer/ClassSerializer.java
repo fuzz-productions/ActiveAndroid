@@ -1,15 +1,19 @@
 package com.activeandroid.serializer;
 
+import android.content.ContentValues;
+import android.database.Cursor;
+
 import com.activeandroid.Cache;
 import com.activeandroid.IModelInfo;
 import com.activeandroid.Model;
 import com.activeandroid.TableInfo;
 import com.activeandroid.annotation.ForeignKey;
 import com.activeandroid.annotation.PrimaryKey;
+import com.activeandroid.query.Select;
 import com.activeandroid.util.ReflectionUtils;
+import com.activeandroid.util.SQLiteUtils;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Type;
 
 /**
  * Created by andrewgrosner
@@ -24,37 +28,96 @@ public abstract class ClassSerializer<OBJECT_CLASS extends IModelInfo> {
      * @param position
      * @return
      */
-    public abstract Object serializeField(OBJECT_CLASS object, int position);
+    public void serializeField(ContentValues contentValues, OBJECT_CLASS object, int position){
+        TableInfo tableInfo = Cache.getTableInfo(object.getClass());
+        Field field = tableInfo.getFields()[position];
+        field.setAccessible(true);
+        String fieldName = tableInfo.getColumnName(field);
 
-    public abstract Object deserializeField(OBJECT_CLASS object, int position, String entityId, boolean columnIsNull);
+        Class<?> fieldType = field.getType();
+
+        if (field.isAnnotationPresent(ForeignKey.class) && ReflectionUtils.isModel(getFieldType(object, position))) {
+            ForeignKey key = field.getAnnotation(ForeignKey.class);
+            if (!key.name().equals("")) {
+                fieldName = key.name();
+            }
+        }
+
+        SQLiteUtils.applyToContentValues(contentValues, getFieldValue(object, position), fieldName, fieldType);
+    }
+
+    public Object getFieldValue(OBJECT_CLASS object, int position){
+        TableInfo tableInfo = Cache.getTableInfo(object.getClass());
+        Field field = tableInfo.getFields()[position];
+        field.setAccessible(true);
+
+        Object value = null;
+        try {
+            value = field.get(object);
+            if (field.isAnnotationPresent(ForeignKey.class) && ReflectionUtils.isModel(getFieldType(object, position))) {
+                value = ((Model) value).getId();
+            }
+        } catch (IllegalAccessException e) {
+
+        }
+        value = SQLiteUtils.getTypeSerializedValue(value);
+        return value;
+    }
+
+    public Object deserializeField(Cursor cursor, OBJECT_CLASS object, int position){
+
+        TableInfo tableInfo = Cache.getTableInfo(object.getClass());
+        Field field = tableInfo.getFields()[position];
+        field.setAccessible(true);
+
+        Class fieldType = field.getType();
+        String fieldName = tableInfo.getColumnName(field);
+
+        int columnIndex = cursor.getColumnIndex(fieldName);
+
+        if(columnIndex<0){
+            return null;
+        }
+
+        boolean columnIsNull = cursor.isNull(columnIndex);
+        String entityId = cursor.getString(columnIndex);
+
+        TypeSerializer typeSerializer = Cache.getParserForType(fieldType);
+        if (typeSerializer != null) {
+            fieldType = typeSerializer.getSerializedType();
+        }
+        Object value = null;
+        if (field.isAnnotationPresent(ForeignKey.class) && ReflectionUtils.isModel(fieldType)) {
+            Model entity = (Model) Cache.getEntity(object.getClass(), entityId);
+            if (entity == null) {
+                entity = new Select().from(object.getClass()).where(SQLiteUtils.getWhereFromEntityId(object, entityId)).executeSingle();
+            }
+
+            value = entity;
+        }
+
+        // Use a deserializer if one is available
+        if (typeSerializer != null && !columnIsNull) {
+            value = typeSerializer.deserialize(value);
+        }
+
+        return SQLiteUtils.loadValues(cursor, value, fieldType, columnIndex);
+    }
 
     public int getFieldCount(OBJECT_CLASS iModelInfo){
         return Cache.getTableInfo(iModelInfo.getClass()).getFields().length;
     }
 
-    public String getFieldName(OBJECT_CLASS iModelInfo, int position){
-        TableInfo tableInfo = Cache.getTableInfo(iModelInfo.getClass());
-        Field field = tableInfo.getFields()[position];
-        String fieldName = tableInfo.getColumnName(field);
-        if (field.isAnnotationPresent(ForeignKey.class) && ReflectionUtils.isModel(getFieldType(position))) {
-            ForeignKey key = field.getAnnotation(ForeignKey.class);
-            if (!key.name().equals("")) {
-                fieldName = field.getAnnotation(ForeignKey.class).name();
-            }
-        }
-
-        return fieldName;
+    public String getPrimaryFieldName(Class<? extends IModelInfo> iModelInfo, int position){
+        TableInfo tableInfo = Cache.getTableInfo(iModelInfo);
+        return tableInfo.getColumnName(tableInfo.getPrimaryKeys().get(position));
     }
 
-    public String getPrimaryFieldName(IModelInfo iModelInfo, int position){
-        return Cache.getTableInfo(iModelInfo.getClass()).getPrimaryKeys().get(position).getName();
+    public int getPrimaryFieldCount(Class<? extends IModelInfo> iModelInfo){
+        return Cache.getTableInfo(iModelInfo).getPrimaryKeys().size();
     }
 
-    public int getPrimaryFieldCount(IModelInfo iModelInfo){
-        return Cache.getTableInfo(iModelInfo.getClass()).getPrimaryKeys().size();
-    }
-
-    public Class<?> getFieldType(IModelInfo iModelInfo, int position){
+    public Class<?> getFieldType(OBJECT_CLASS iModelInfo, int position){
         return Cache.getTableInfo(iModelInfo.getClass()).getFields()[position].getType();
     }
 
@@ -73,8 +136,8 @@ public abstract class ClassSerializer<OBJECT_CLASS extends IModelInfo> {
         }
     }
 
-    public Class<OBJECT_CLASS> getTableType(OBJECT_CLASS object){
-        return (Class<OBJECT_CLASS>) Cache.getTableInfo(object.getClass()).getType();
+    public Class<?> getTableType(OBJECT_CLASS object){
+        return Cache.getTableInfo(object.getClass()).getType();
     }
 
     public void setField(int position, OBJECT_CLASS iModelInfo, Object value){
@@ -86,4 +149,6 @@ public abstract class ClassSerializer<OBJECT_CLASS extends IModelInfo> {
 
         }
     }
+
+    public abstract Class<?> getTableType();
 }

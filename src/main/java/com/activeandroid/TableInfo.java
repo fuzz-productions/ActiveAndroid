@@ -62,7 +62,6 @@ public final class TableInfo {
 		List<Field> fields = new ArrayList<Field>();
         try {
             fields = ReflectionUtils.getAllFields(fields, Class.forName(type.getName()));
-            fields.add(getIdField(type));
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -95,10 +94,6 @@ public final class TableInfo {
         }
 	}
 
-	//////////////////////////////////////////////////////////////////////////////////////
-	// PUBLIC METHODS
-	//////////////////////////////////////////////////////////////////////////////////////
-
 	public Class<? extends IModelInfo> getType() {
 		return mType;
 	}
@@ -111,13 +106,20 @@ public final class TableInfo {
         return mColumnNames.keySet().toArray(new Field[mColumnNames.size()]);
     }
 
+    public Field getFieldForName(String name){
+        Field field = null;
+        for(Field f: mColumnNames.keySet()){
+            if(f.getName().equals(name)){
+                field = f;
+                break;
+            }
+        }
+        return field;
+    }
+
 	public String getColumnName(Field field) {
 		return mColumnNames.get(field);
 	}
-
-	//////////////////////////////////////////////////////////////////////////////////////
-	// PRIVATE METHODS
-	//////////////////////////////////////////////////////////////////////////////////////
 
 	private Field getIdField(Class<?> type) {
 		if (type.equals(IModelInfo.class)) {
