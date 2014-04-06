@@ -372,7 +372,7 @@ public final class SQLiteUtils {
                 model.setRowId(db.insert(model.getTableName(), null, values));
                 serializer.applyPrimaryKeys(model);
             } else {
-                model.setRowId(db.update(model.getTableName(), values, SQLiteUtils.getWhereStatementWithoutValues(serializer, model.getModelClass()), null));
+                model.setRowId(db.update(model.getTableName(), values, SQLiteUtils.getWhereStatement(serializer, model), null));
             }
 
             Cache.getContext().getContentResolver()
