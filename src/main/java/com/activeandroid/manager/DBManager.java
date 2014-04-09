@@ -84,7 +84,7 @@ public abstract class DBManager<OBJECT_CLASS extends Model> extends SingleDBMana
     }
 
     public OBJECT_CLASS getObject(Object object){
-        return getObject(mObjectClass, object);
+        return DBManagerCache.constructNewInstance(object, mObjectClass);
     }
 
     /**

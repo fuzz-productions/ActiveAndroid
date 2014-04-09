@@ -110,12 +110,7 @@ public class SingleDBManager {
     }
 
     public <OBJECT_CLASS extends Model> OBJECT_CLASS getObject(Class<OBJECT_CLASS> obClazz, Object object){
-        try {
-            return obClazz.getConstructor(object.getClass()).newInstance(object);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-        return null;
+       return DBManagerCache.constructNewInstance(object, obClazz);
     }
 
     /**
@@ -185,10 +180,10 @@ public class SingleDBManager {
     public <OBJECT_CLASS extends Model> void addAll(Class<OBJECT_CLASS> obClazz, Object array){
         ActiveAndroid.beginTransaction();
         try{
-            int count = ReflectionUtils.invokeGetSizeOfObject(array);
+            int count = DBManagerCache.invokeGetSizeMethod(array);
             for(int i = 0; i < count;i++){
-                Object getObject = ReflectionUtils.invokeGetMethod(array, i);
-                OBJECT_CLASS object = obClazz.getConstructor(getObject.getClass()).newInstance(getObject);
+                Object getObject = DBManagerCache.invokeGetMethod(array, i);
+                OBJECT_CLASS object = DBManagerCache.constructNewInstance(getObject, obClazz);
                 add(object);
             }
             ActiveAndroid.setTransactionSuccessful();
@@ -210,9 +205,9 @@ public class SingleDBManager {
             @Override
             public void run() {
                 final List<OBJECT_CLASS> objects = new ArrayList<OBJECT_CLASS>();
-                int count = ReflectionUtils.invokeGetSizeOfObject(array);
+                int count = DBManagerCache.invokeGetSizeMethod(array);
                 for(int i = 0; i < count;i++){
-                    Object getObject = ReflectionUtils.invokeGetMethod(array, i);
+                    Object getObject =  DBManagerCache.invokeGetMethod(array, i);
                     objects.add(getObject(obClazz, getObject));
                 }
 

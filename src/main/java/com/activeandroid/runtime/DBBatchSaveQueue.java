@@ -20,6 +20,11 @@ public class DBBatchSaveQueue extends Thread{
 
     private static DBBatchSaveQueue mBatchSaveQueue;
 
+    /**
+     *  Once the queue size reaches 50 or larger, the thread will be interrupted and we will batch save the models.
+     */
+    private static final int sMODEL_SAVE_SIZE = 50;
+
     public static DBBatchSaveQueue getSharedSaveQueue(){
         if(mBatchSaveQueue==null){
             mBatchSaveQueue = new DBBatchSaveQueue();
@@ -70,9 +75,10 @@ public class DBBatchSaveQueue extends Thread{
             }
 
             try {
-                //sleep for one second to gather as much data as possible
-                Thread.sleep(1000);
+                //sleep for 5 mins, and then check for leftovers
+                Thread.sleep(300000);
             } catch (InterruptedException e) {
+                AALog.d("DBBatchSaveQueue", "Batch interrupted to start saving");
             }
         }
     }
@@ -80,12 +86,20 @@ public class DBBatchSaveQueue extends Thread{
     public void add(final Model model){
         synchronized (mModels){
             mModels.add(model);
+
+            if(mModels.size()>sMODEL_SAVE_SIZE){
+                interrupt();
+            }
         }
     }
 
     public <COLLECTION_CLASS extends Collection<OBJECT_CLASS>, OBJECT_CLASS extends Model> void addAll(final COLLECTION_CLASS list){
         synchronized (mModels){
             mModels.addAll(list);
+
+            if(mModels.size()>sMODEL_SAVE_SIZE){
+                interrupt();
+            }
         }
     }
 
