@@ -25,11 +25,17 @@ public class DBBatchSaveQueue extends Thread{
      */
     private static final int sMODEL_SAVE_SIZE = 50;
 
+    private boolean mQuit = false;
+
     public static DBBatchSaveQueue getSharedSaveQueue(){
         if(mBatchSaveQueue==null){
             mBatchSaveQueue = new DBBatchSaveQueue();
         }
         return mBatchSaveQueue;
+    }
+
+    public static void disposeSharedQueue(){
+        mBatchSaveQueue = null;
     }
 
     private final ArrayList<Model> mModels;
@@ -80,6 +86,10 @@ public class DBBatchSaveQueue extends Thread{
             } catch (InterruptedException e) {
                 AALog.d("DBBatchSaveQueue", "Batch interrupted to start saving");
             }
+
+            if(mQuit){
+                return;
+            }
         }
     }
 
@@ -113,5 +123,9 @@ public class DBBatchSaveQueue extends Thread{
         synchronized (mModels){
             mModels.removeAll(collection);
         }
+    }
+
+    public void quit() {
+        mQuit = true;
     }
 }

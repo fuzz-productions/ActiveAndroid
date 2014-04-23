@@ -17,6 +17,7 @@ package com.activeandroid.app;
  */
 
 import com.activeandroid.ActiveAndroid;
+import com.activeandroid.manager.DBManagerRuntime;
 import com.activeandroid.runtime.DBRequestQueue;
 
 public class AAApplication extends android.app.Application {
@@ -28,6 +29,7 @@ public class AAApplication extends android.app.Application {
 		super.onCreate();
 		ActiveAndroid.initialize(this);
 
+        DBManagerRuntime.restartManagers();
 	}
 
     public static void setDebugLogEnabled(boolean enabled){

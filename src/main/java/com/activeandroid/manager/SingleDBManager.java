@@ -16,6 +16,7 @@ import com.activeandroid.runtime.DBBatchSaveQueue;
 import com.activeandroid.runtime.DBRequest;
 import com.activeandroid.runtime.DBRequestInfo;
 import com.activeandroid.runtime.DBRequestQueue;
+import com.activeandroid.util.AALog;
 import com.activeandroid.util.ReflectionUtils;
 import com.activeandroid.util.SQLiteUtils;
 
@@ -44,16 +45,10 @@ public class SingleDBManager {
      * @param name
      */
     public SingleDBManager(String name){
-        checkThread();
         mName = name;
-
-        if(!getQueue().isAlive()){
-            getQueue().start();
-        }
-
-        if(!getSaveQueue().isAlive()){
-            getSaveQueue().start();
-        }
+        checkThread();
+        DBManagerRuntime.getManagers().add(this);
+        checkQueue();
     }
 
     /**
@@ -66,6 +61,22 @@ public class SingleDBManager {
            manager = new SingleDBManager("SingleDBManager");
         }
         return manager;
+    }
+
+    void checkQueue() {
+        if (!getQueue().isAlive()) {
+            getQueue().start();
+        }
+        if (!getSaveQueue().isAlive()) {
+            getSaveQueue().start();
+        }
+    }
+
+    /**
+     * Destroys the running queue
+     */
+    void disposeQueue() {
+        mQueue = null;
     }
 
     public DBRequestQueue getQueue(){
@@ -481,4 +492,5 @@ public class SingleDBManager {
             }
         });
     }
+
 }

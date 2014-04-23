@@ -43,6 +43,9 @@ public class DBRequestQueue extends Thread{
                 runnable = mQueue.take();
             } catch (InterruptedException e){
                 if(mQuit){
+                    synchronized (mQueue) {
+                        mQueue.clear();
+                    }
                     return;
                 }
                 continue;
@@ -59,7 +62,7 @@ public class DBRequestQueue extends Thread{
     }
 
     public void add(DBRequest runnable){
-        if(!mQueue.contains(runnable)){
+        if (!mQueue.contains(runnable)) {
             mQueue.add(runnable);
         }
     }
@@ -69,7 +72,7 @@ public class DBRequestQueue extends Thread{
      * @param runnable
      */
     public void cancel(DBRequest runnable){
-        if(mQueue.contains(runnable)){
+        if (mQueue.contains(runnable)) {
             mQueue.remove(runnable);
         }
     }
