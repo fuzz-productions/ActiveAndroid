@@ -16,6 +16,7 @@ package com.activeandroid.query;
  * limitations under the License.
  */
 
+import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.text.TextUtils;
 import com.activeandroid.Cache;
@@ -223,6 +224,14 @@ public final class From implements Sqlable {
 			return null;
 		}
 	}
+
+    /**
+     * Returns the DB Cursor from the SQL statement
+     * @return
+     */
+    public Cursor getCursor(){
+        return Cache.openDatabase().rawQuery(toSql(), getArguments());
+    }
 
 	public <T extends Model> T executeSingle() {
 		if (mQueryBase instanceof Select) {
