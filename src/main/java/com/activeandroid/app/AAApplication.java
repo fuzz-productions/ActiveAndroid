@@ -17,6 +17,7 @@ package com.activeandroid.app;
  */
 
 import com.activeandroid.ActiveAndroid;
+import com.activeandroid.Cache;
 import com.activeandroid.manager.DBManagerRuntime;
 
 public class AAApplication extends android.app.Application {
@@ -27,8 +28,10 @@ public class AAApplication extends android.app.Application {
     public void onCreate() {
         super.onCreate();
         ActiveAndroid.initialize(this);
-
         DBManagerRuntime.restartManagers();
+        if(Cache.hasMigrationExecuted()) {
+            onMigrationSuccessful();
+        }
     }
 
     public static void setDebugLogEnabled(boolean enabled) {

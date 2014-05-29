@@ -72,90 +72,94 @@ public abstract class Model {
 
 	public final void save() {
 		final SQLiteDatabase db = Cache.openDatabase();
-		final ContentValues values = new ContentValues();
+        save(db);
+	}
 
-		for (Field field : mTableInfo.getFields()) {
-			String fieldName = mTableInfo.getColumnName(field);
-			Class<?> fieldType = field.getType();
+    private void save(final SQLiteDatabase db) {
+        final ContentValues values = new ContentValues();
 
-			field.setAccessible(true);
+        for (Field field : mTableInfo.getFields()) {
+            String fieldName = mTableInfo.getColumnName(field);
+            Class<?> fieldType = field.getType();
 
-			try {
-				Object value = field.get(this);
+            field.setAccessible(true);
 
-				if (value != null) {
-					final TypeSerializer typeSerializer = Cache.getParserForType(fieldType);
-					if (typeSerializer != null) {
-						// serialize data
-						value = typeSerializer.serialize(value);
-						// set new object type
-						if (value != null) {
-							fieldType = value.getClass();
-							// check that the serializer returned what it promised
-							if (!fieldType.equals(typeSerializer.getSerializedType())) {
-								AALog.w(String.format("TypeSerializer returned wrong type: expected a %s but got a %s",
+            try {
+                Object value = field.get(this);
+
+                if (value != null) {
+                    final TypeSerializer typeSerializer = Cache.getParserForType(fieldType);
+                    if (typeSerializer != null) {
+                        // serialize data
+                        value = typeSerializer.serialize(value);
+                        // set new object type
+                        if (value != null) {
+                            fieldType = value.getClass();
+                            // check that the serializer returned what it promised
+                            if (!fieldType.equals(typeSerializer.getSerializedType())) {
+                                AALog.w(String.format("TypeSerializer returned wrong type: expected a %s but got a %s",
                                         typeSerializer.getSerializedType(), fieldType));
-							}
-						}
-					}
-				}
+                            }
+                        }
+                    }
+                }
 
-				// TODO: Find a smarter way to do this? This if block is necessary because we
-				// can't know the type until runtime.
-				if (value == null) {
-					values.putNull(fieldName);
-				}
-				else if (fieldType.equals(Byte.class) || fieldType.equals(byte.class)) {
-					values.put(fieldName, (Byte) value);
-				}
-				else if (fieldType.equals(Short.class) || fieldType.equals(short.class)) {
-					values.put(fieldName, (Short) value);
-				}
-				else if (fieldType.equals(Integer.class) || fieldType.equals(int.class)) {
-					values.put(fieldName, (Integer) value);
-				}
-				else if (fieldType.equals(Long.class) || fieldType.equals(long.class)) {
-					values.put(fieldName, (Long) value);
-				}
-				else if (fieldType.equals(Float.class) || fieldType.equals(float.class)) {
-					values.put(fieldName, (Float) value);
-				}
-				else if (fieldType.equals(Double.class) || fieldType.equals(double.class)) {
-					values.put(fieldName, (Double) value);
-				}
-				else if (fieldType.equals(Boolean.class) || fieldType.equals(boolean.class)) {
-					values.put(fieldName, (Boolean) value);
-				}
-				else if (fieldType.equals(Character.class) || fieldType.equals(char.class)) {
-					values.put(fieldName, value.toString());
-				}
-				else if (fieldType.equals(String.class)) {
-					values.put(fieldName, value.toString());
-				}
-				else if (fieldType.equals(Byte[].class) || fieldType.equals(byte[].class)) {
-					values.put(fieldName, (byte[]) value);
-				}
-				else if (field.isAnnotationPresent(ForeignKey.class) && ReflectionUtils.isModel(fieldType)) {
+                // TODO: Find a smarter way to do this? This if block is necessary because we
+                // can't know the type until runtime.
+                if (value == null) {
+                    values.putNull(fieldName);
+                }
+                else if (fieldType.equals(Byte.class) || fieldType.equals(byte.class)) {
+                    values.put(fieldName, (Byte) value);
+                }
+                else if (fieldType.equals(Short.class) || fieldType.equals(short.class)) {
+                    values.put(fieldName, (Short) value);
+                }
+                else if (fieldType.equals(Integer.class) || fieldType.equals(int.class)) {
+                    values.put(fieldName, (Integer) value);
+                }
+                else if (fieldType.equals(Long.class) || fieldType.equals(long.class)) {
+                    values.put(fieldName, (Long) value);
+                }
+                else if (fieldType.equals(Float.class) || fieldType.equals(float.class)) {
+                    values.put(fieldName, (Float) value);
+                }
+                else if (fieldType.equals(Double.class) || fieldType.equals(double.class)) {
+                    values.put(fieldName, (Double) value);
+                }
+                else if (fieldType.equals(Boolean.class) || fieldType.equals(boolean.class)) {
+                    values.put(fieldName, (Boolean) value);
+                }
+                else if (fieldType.equals(Character.class) || fieldType.equals(char.class)) {
+                    values.put(fieldName, value.toString());
+                }
+                else if (fieldType.equals(String.class)) {
+                    values.put(fieldName, value.toString());
+                }
+                else if (fieldType.equals(Byte[].class) || fieldType.equals(byte[].class)) {
+                    values.put(fieldName, (byte[]) value);
+                }
+                else if (field.isAnnotationPresent(ForeignKey.class) && ReflectionUtils.isModel(fieldType)) {
                     ForeignKey key = field.getAnnotation(ForeignKey.class);
                     if(!key.name().equals("")){
                         fieldName = field.getAnnotation(ForeignKey.class).name();
                     }
-					values.put(fieldName, ((Model) value).getId());
-				}
-				else if (ReflectionUtils.isSubclassOf(fieldType, Enum.class)) {
-					values.put(fieldName, ((Enum<?>) value).name());
-				}
-			}
-			catch (IllegalArgumentException e) {
-				AALog.e(e.getClass().getName(), e);
-			}
-			catch (IllegalAccessException e) {
-				AALog.e(e.getClass().getName(), e);
-			}
-		}
+                    values.put(fieldName, ((Model) value).getId());
+                }
+                else if (ReflectionUtils.isSubclassOf(fieldType, Enum.class)) {
+                    values.put(fieldName, ((Enum<?>) value).name());
+                }
+            }
+            catch (IllegalArgumentException e) {
+                AALog.e(e.getClass().getName(), e);
+            }
+            catch (IllegalAccessException e) {
+                AALog.e(e.getClass().getName(), e);
+            }
+        }
 
         if(!exists()){
-		     mId = db.insert(mTableInfo.getTableName(), null, values);
+            mId = db.insert(mTableInfo.getTableName(), null, values);
 
             for(Field field : mTableInfo.getPrimaryKeys()){
                 if(field.isAnnotationPresent(PrimaryKey.class) &&
@@ -169,12 +173,12 @@ public abstract class Model {
                 }
             }
         } else {
-			mId = db.update(mTableInfo.getTableName(), values, SQLiteUtils.getWhereStatement(this, mTableInfo), null);
-		}
+            mId = db.update(mTableInfo.getTableName(), values, SQLiteUtils.getWhereStatement(this, mTableInfo), null);
+        }
 
-		Cache.getContext().getContentResolver()
-				.notifyChange(ContentProvider.createUri(mTableInfo.getType(), getId()), null);
-	}
+        Cache.getContext().getContentResolver()
+                .notifyChange(ContentProvider.createUri(mTableInfo.getType(), getId()), null);
+    }
 
     public boolean exists(){
         Model model = new Select().from(getClass()).where(SQLiteUtils.getWhereStatement(this, mTableInfo)).executeSingle();

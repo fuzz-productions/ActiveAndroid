@@ -74,7 +74,8 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         executePragmas(db);
         executeCreate(db);
-        executeMigrations(db, oldVersion, newVersion);
+        boolean migrationSuccess = executeMigrations(db, oldVersion, newVersion);
+        Cache.setMigrationExecuted(migrationSuccess);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
@@ -163,10 +164,6 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
             }
         } catch (IOException e) {
             AALog.e("Failed to execute migrations.", e);
-        }
-
-        if(migrationExecuted) {
-            Cache.getAAApplication().onMigrationSuccessful();
         }
 
         return migrationExecuted;

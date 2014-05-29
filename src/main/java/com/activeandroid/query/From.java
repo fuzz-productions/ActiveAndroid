@@ -227,7 +227,8 @@ public final class From implements Sqlable {
 
     /**
      * Returns the DB Cursor from the SQL statement
-     * @return
+     * @return {@link android.database.Cursor} Note that the cursor is positioned before the first entry,
+     * so you must call {@link android.database.Cursor#moveToNext()} to use the cursor
      */
     public Cursor getCursor(){
         return Cache.openDatabase().rawQuery(toSql(), getArguments());
