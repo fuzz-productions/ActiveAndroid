@@ -16,14 +16,15 @@ package com.activeandroid;
  * limitations under the License.
  */
 
-import java.util.Collection;
-
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.util.LruCache;
 
+import com.activeandroid.app.AAApplication;
 import com.activeandroid.serializer.TypeSerializer;
 import com.activeandroid.util.AALog;
+
+import java.util.Collection;
 
 public final class Cache {
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -111,6 +112,11 @@ public final class Cache {
 	public static Context getContext() {
 		return sContext;
 	}
+
+    // AAApplication access
+    public static AAApplication getAAApplication() {
+        return (AAApplication) sContext;
+    }
 
 	// Entity cache
 

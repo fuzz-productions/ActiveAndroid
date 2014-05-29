@@ -165,6 +165,10 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
             AALog.e("Failed to execute migrations.", e);
         }
 
+        if(migrationExecuted) {
+            Cache.getAAApplication().onMigrationSuccessful();
+        }
+
         return migrationExecuted;
     }
 
