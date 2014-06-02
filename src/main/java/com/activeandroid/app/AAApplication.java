@@ -52,7 +52,7 @@ public class AAApplication extends android.app.Application {
     /**
      * override this method to perform any special operations when a migration takes place
      */
-    public void onMigrationSuccessful() {
+    protected void onMigrationSuccessful() {
 
     }
 }
