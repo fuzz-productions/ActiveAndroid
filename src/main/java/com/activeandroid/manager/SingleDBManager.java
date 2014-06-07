@@ -40,12 +40,15 @@ public class SingleDBManager {
 
     private String mName;
 
+    private  final boolean hasOwnQueue;
+
     /**
      * Creates the SingleDBManager while starting its own request queue
      * @param name
      */
-    public SingleDBManager(String name){
+    public SingleDBManager(String name, boolean createNewQueue){
         mName = name;
+        hasOwnQueue = createNewQueue;
         checkThread();
         DBManagerRuntime.getManagers().add(this);
         checkQueue();
@@ -58,7 +61,7 @@ public class SingleDBManager {
      */
     public static SingleDBManager getSharedInstance(){
         if(manager==null){
-           manager = new SingleDBManager("SingleDBManager");
+           manager = new SingleDBManager("SingleDBManager", true);
         }
         return manager;
     }
@@ -72,6 +75,10 @@ public class SingleDBManager {
         }
     }
 
+    public boolean hasOwnQueue() {
+        return hasOwnQueue;
+    }
+
     /**
      * Destroys the running queue
      */
@@ -81,7 +88,11 @@ public class SingleDBManager {
 
     public DBRequestQueue getQueue(){
         if(mQueue==null){
-            mQueue = new DBRequestQueue(mName);
+            if(hasOwnQueue) {
+                mQueue = new DBRequestQueue(mName);
+            } else{
+                mQueue = SingleDBManager.getSharedInstance().mQueue;
+            }
         }
         return mQueue;
     }

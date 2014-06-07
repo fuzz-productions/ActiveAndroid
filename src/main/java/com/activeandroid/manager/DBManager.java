@@ -21,12 +21,26 @@ public abstract class DBManager<OBJECT_CLASS extends Model> extends SingleDBMana
 
     protected Class<OBJECT_CLASS> mObjectClass;
 
+
+    /**
+     * Constructs a new instance while keeping an instance of the class for its objects.
+     * <br>
+     * Shares the same queue with the {@link com.activeandroid.manager.SingleDBManager}
+     * @param mObjectClass
+     */
+    public DBManager(Class<OBJECT_CLASS> mObjectClass) {
+        super(mObjectClass.getSimpleName(), false);
+        this.mObjectClass = mObjectClass;
+    }
+
     /**
      * Constructs a new instance while keeping an instance of the class for its objects
      * @param classClass
+     * @param hasOwnQueue - set this flag to true to create its own request queue
+     *                    (useful for many DB operations, however each may use up a chunk  of memory)
      */
-    public DBManager(Class<OBJECT_CLASS> classClass){
-        super(classClass.getSimpleName());
+    public DBManager(Class<OBJECT_CLASS> classClass, boolean hasOwnQueue){
+        super(classClass.getSimpleName(), hasOwnQueue);
         mObjectClass = classClass;
     }
 
