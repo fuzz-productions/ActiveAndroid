@@ -128,16 +128,23 @@ public final class SQLiteUtils {
             StringBuilder builder = new StringBuilder("PRIMARY KEY(");
 
 
+            int count = 0;
             for(int i  =0 ; i< primaryColumns.size(); i++){
-                builder.append(tableInfo.getColumnName(primaryColumns.get(i)));
-                if(i< primaryColumns.size()-1){
-                    builder.append(", ");
+                PrimaryKey primaryKey = primaryColumns.get(i).getAnnotation(PrimaryKey.class);
+                if(!primaryKey.type().equals(PrimaryKey.Type.AUTO_INCREMENT)) {
+                    count++;
+                    builder.append(tableInfo.getColumnName(primaryColumns.get(i)));
+                    if (i < primaryColumns.size() - 1) {
+                        builder.append(", ");
+                    }
                 }
             }
 
-            builder.append(")");
+            if(count>0) {
+                builder.append(")");
 
-            definitions.add(builder.toString());
+                definitions.add(builder.toString());
+            }
         }
 
         for(int i = 0; i < foreignColumns.size(); i++){
