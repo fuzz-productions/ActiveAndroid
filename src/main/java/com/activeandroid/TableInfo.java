@@ -80,8 +80,7 @@ public final class TableInfo {
 				mColumnNames.put(field, fieldName);
 			}
 
-            if(field.isAnnotationPresent(PrimaryKey.class) &&
-                    field.getAnnotation(PrimaryKey.class).type().equals(PrimaryKey.Type.DEFAULT)){
+            if(field.isAnnotationPresent(PrimaryKey.class)){
                 mPrimaryKeys.add(field);
             }
 
