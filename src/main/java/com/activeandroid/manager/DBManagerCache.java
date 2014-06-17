@@ -1,6 +1,6 @@
 package com.activeandroid.manager;
 
-import com.activeandroid.Model;
+import com.activeandroid.IModel;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -87,7 +87,7 @@ public class DBManagerCache {
         }
     }
 
-    public static <OBJECT_CLASS extends Model> OBJECT_CLASS constructNewInstance(Object inObject, Class<OBJECT_CLASS> objectClass){
+    public static <OBJECT_CLASS extends IModel> OBJECT_CLASS constructNewInstance(Object inObject, Class<OBJECT_CLASS> objectClass){
         Constructor<OBJECT_CLASS> constructor = mConstructorMap.get(objectClass);
         if(constructor==null){
             try {

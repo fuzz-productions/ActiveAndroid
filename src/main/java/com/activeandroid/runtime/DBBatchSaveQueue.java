@@ -3,7 +3,7 @@ package com.activeandroid.runtime;
 import android.os.Looper;
 
 import com.activeandroid.ActiveAndroid;
-import com.activeandroid.Model;
+import com.activeandroid.IModel;
 import com.activeandroid.manager.SingleDBManager;
 import com.activeandroid.util.AALog;
 
@@ -38,12 +38,12 @@ public class DBBatchSaveQueue extends Thread{
         mBatchSaveQueue = null;
     }
 
-    private final ArrayList<Model> mModels;
+    private final ArrayList<IModel> mModels;
 
     public DBBatchSaveQueue(){
         super("DBBatchSaveQueue");
 
-        mModels = new ArrayList<Model>();
+        mModels = new ArrayList<IModel>();
     }
 
     @Override
@@ -52,9 +52,9 @@ public class DBBatchSaveQueue extends Thread{
         Looper.prepare();
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
         while (true){
-            final ArrayList<Model> tmpModels;
+            final ArrayList<IModel> tmpModels;
             synchronized (mModels){
-                tmpModels = new ArrayList<Model>(mModels);
+                tmpModels = new ArrayList<IModel>(mModels);
                 mModels.clear();
             }
             if(tmpModels.size()>0) {
@@ -66,8 +66,8 @@ public class DBBatchSaveQueue extends Thread{
                         ActiveAndroid.beginTransaction();
                         try {
                             AALog.d("DBBatchSaveQueue", "Executing batch save of: " + tmpModels.size() + " on :" + Thread.currentThread().getName());
-                            for (Model model: tmpModels) {
-                                model.save();
+                            for (IModel IModel: tmpModels) {
+                                IModel.save();
                             }
                             ActiveAndroid.setTransactionSuccessful();
                         } catch (Throwable e) {
@@ -93,9 +93,9 @@ public class DBBatchSaveQueue extends Thread{
         }
     }
 
-    public void add(final Model model){
+    public void add(final IModel IModel){
         synchronized (mModels){
-            mModels.add(model);
+            mModels.add(IModel);
 
             if(mModels.size()>sMODEL_SAVE_SIZE){
                 interrupt();
@@ -103,7 +103,7 @@ public class DBBatchSaveQueue extends Thread{
         }
     }
 
-    public <COLLECTION_CLASS extends Collection<OBJECT_CLASS>, OBJECT_CLASS extends Model> void addAll(final COLLECTION_CLASS list){
+    public <COLLECTION_CLASS extends Collection<OBJECT_CLASS>, OBJECT_CLASS extends IModel> void addAll(final COLLECTION_CLASS list){
         synchronized (mModels){
             mModels.addAll(list);
 
@@ -113,9 +113,9 @@ public class DBBatchSaveQueue extends Thread{
         }
     }
 
-    public void remove(final Model model){
+    public void remove(final IModel IModel){
         synchronized (mModels){
-            mModels.remove(model);
+            mModels.remove(IModel);
         }
     }
 

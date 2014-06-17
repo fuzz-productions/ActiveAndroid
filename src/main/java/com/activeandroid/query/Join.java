@@ -19,7 +19,7 @@ package com.activeandroid.query;
 import android.text.TextUtils;
 
 import com.activeandroid.Cache;
-import com.activeandroid.Model;
+import com.activeandroid.IModel;
 
 public final class Join implements Sqlable {
 	static enum JoinType {
@@ -27,13 +27,13 @@ public final class Join implements Sqlable {
 	}
 
 	private From mFrom;
-	private Class<? extends Model> mType;
+	private Class<? extends IModel> mType;
 	private String mAlias;
 	private JoinType mJoinType;
 	private String mOn;
 	private String[] mUsing;
 
-	Join(From from, Class<? extends Model> table, JoinType joinType) {
+	Join(From from, Class<? extends IModel> table, JoinType joinType) {
 		mFrom = from;
 		mType = table;
 		mJoinType = joinType;

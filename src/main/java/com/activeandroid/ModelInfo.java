@@ -43,7 +43,7 @@ final class ModelInfo {
 	// PRIVATE METHODS
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	private Map<Class<? extends Model>, TableInfo> mTableInfos = new HashMap<Class<? extends Model>, TableInfo>();
+	private Map<Class<? extends IModel>, TableInfo> mTableInfos = new HashMap<Class<? extends IModel>, TableInfo>();
 	private Map<Class<?>, TypeSerializer> mTypeSerializers = new HashMap<Class<?>, TypeSerializer>() {
 		{
 			put(Calendar.class, new CalendarSerializer());
@@ -77,7 +77,7 @@ final class ModelInfo {
 		return mTableInfos.values();
 	}
 
-	public TableInfo getTableInfo(Class<? extends Model> type) {
+	public TableInfo getTableInfo(Class<? extends IModel> type) {
 		return mTableInfos.get(type);
 	}
 
@@ -94,10 +94,10 @@ final class ModelInfo {
 			return false;
 		}
 
-		final List<Class<? extends Model>> models = configuration.getModelClasses();
+		final List<Class<? extends IModel>> models = configuration.getModelClasses();
 		if (models != null) {
-			for (Class<? extends Model> model : models) {
-				mTableInfos.put(model, new TableInfo(model));
+			for (Class<? extends IModel> IModel : models) {
+				mTableInfos.put(IModel, new TableInfo(IModel));
 			}
 		}
 
@@ -186,7 +186,7 @@ final class ModelInfo {
 				Class<?> discoveredClass = Class.forName(className, false, classLoader);
 				if (ReflectionUtils.isModel(discoveredClass) && !discoveredClass.isAnnotationPresent(Ignore.class)) {
 					@SuppressWarnings("unchecked")
-					Class<? extends Model> modelClass = (Class<? extends Model>) discoveredClass;
+					Class<? extends IModel> modelClass = (Class<? extends IModel>) discoveredClass;
 					mTableInfos.put(modelClass, new TableInfo(modelClass));
 				}
 				else if (ReflectionUtils.isTypeSerializer(discoveredClass) && !discoveredClass.isAnnotationPresent(Ignore.class)) {

@@ -38,10 +38,10 @@ public final class Cache {
 
 	private static Context sContext;
 
-	private static ModelInfo sModelInfo;
+	private static ModelInfo sIModelInfo;
 	private static DatabaseHelper sDatabaseHelper;
 
-	private static LruCache<String, Model> sEntities;
+	private static LruCache<String, IModel> sEntities;
 
 	private static boolean sIsInitialized = false;
 
@@ -63,14 +63,14 @@ public final class Cache {
 		}
 
 		sContext = configuration.getContext();
-		sModelInfo = new ModelInfo(configuration);
+		sIModelInfo = new ModelInfo(configuration);
 		sDatabaseHelper = new DatabaseHelper(configuration);
 
 		// TODO: It would be nice to override sizeOf here and calculate the memory
 		// actually used, however at this point it seems like the reflection
 		// required would be too costly to be of any benefit. We'll just set a max
 		// object size instead.
-		sEntities = new LruCache<String, Model>(configuration.getCacheSize());
+		sEntities = new LruCache<String, IModel>(configuration.getCacheSize());
 
 		openDatabase();
 
@@ -88,7 +88,7 @@ public final class Cache {
 		closeDatabase();
 
 		sEntities = null;
-		sModelInfo = null;
+		sIModelInfo = null;
 		sDatabaseHelper = null;
 
 		sIsInitialized = false;
@@ -114,41 +114,41 @@ public final class Cache {
 
 	// Entity cache
 
-	public static String getIdentifier(Class<? extends Model> type, String entityId) {
+	public static String getIdentifier(Class<? extends IModel> type, String entityId) {
 		return getTableName(type) + "@" + entityId;
 	}
 
-	public static String getIdentifier(Model entity) {
+	public static String getIdentifier(IModel entity) {
 		return getIdentifier(entity.getClass(), entity.getId());
 	}
 
-	public static synchronized void addEntity(Model entity) {
+	public static synchronized void addEntity(IModel entity) {
 		sEntities.put(getIdentifier(entity), entity);
 	}
 
-	public static synchronized Model getEntity(Class<? extends Model> type, String entityId) {
+	public static synchronized IModel getEntity(Class<? extends IModel> type, String entityId) {
 		return sEntities.get(getIdentifier(type, entityId));
 	}
 
-	public static synchronized void removeEntity(Model entity) {
+	public static synchronized void removeEntity(IModel entity) {
 		sEntities.remove(getIdentifier(entity));
 	}
 
-	// Model cache
+	// IModel cache
 
 	public static synchronized Collection<TableInfo> getTableInfos() {
-		return sModelInfo.getTableInfos();
+		return sIModelInfo.getTableInfos();
 	}
 
-	public static synchronized TableInfo getTableInfo(Class<? extends Model> type) {
-		return sModelInfo.getTableInfo(type);
+	public static synchronized TableInfo getTableInfo(Class<? extends IModel> type) {
+		return sIModelInfo.getTableInfo(type);
 	}
 
 	public static synchronized TypeSerializer getParserForType(Class<?> type) {
-		return sModelInfo.getTypeSerializer(type);
+		return sIModelInfo.getTypeSerializer(type);
 	}
 
-	public static synchronized String getTableName(Class<? extends Model> type) {
-		return sModelInfo.getTableInfo(type).getTableName();
+	public static synchronized String getTableName(Class<? extends IModel> type) {
+		return sIModelInfo.getTableInfo(type).getTableName();
 	}
 }

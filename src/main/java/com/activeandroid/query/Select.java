@@ -18,7 +18,7 @@ package com.activeandroid.query;
 
 import android.text.TextUtils;
 
-import com.activeandroid.Model;
+import com.activeandroid.IModel;
 
 public final class Select implements Sqlable {
 	private String[] mColumns;
@@ -64,7 +64,7 @@ public final class Select implements Sqlable {
         return this;
     }
 
-	public From from(Class<? extends Model> table) {
+	public From from(Class<? extends IModel> table) {
 		return new From(table, this);
 	}
 

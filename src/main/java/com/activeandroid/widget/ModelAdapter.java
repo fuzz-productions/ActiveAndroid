@@ -6,9 +6,9 @@ import java.util.List;
 import android.content.Context;
 import android.widget.ArrayAdapter;
 
-import com.activeandroid.Model;
+import com.activeandroid.IModel;
 
-public class ModelAdapter<T extends Model> extends ArrayAdapter<T> {
+public class ModelAdapter<T extends IModel> extends ArrayAdapter<T> {
 	public ModelAdapter(Context context, int textViewResourceId) {
 		super(context, textViewResourceId);
 	}

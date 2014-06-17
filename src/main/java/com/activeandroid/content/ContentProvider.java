@@ -12,7 +12,7 @@ import android.util.SparseArray;
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.Cache;
 import com.activeandroid.Configuration;
-import com.activeandroid.Model;
+import com.activeandroid.IModel;
 import com.activeandroid.TableInfo;
 
 public class ContentProvider extends android.content.ContentProvider {
@@ -21,7 +21,7 @@ public class ContentProvider extends android.content.ContentProvider {
 	//////////////////////////////////////////////////////////////////////////////////////
 
 	private static final UriMatcher URI_MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
-	private static final SparseArray<Class<? extends Model>> TYPE_CODES = new SparseArray<Class<? extends Model>>();
+	private static final SparseArray<Class<? extends IModel>> TYPE_CODES = new SparseArray<Class<? extends IModel>>();
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// PRIVATE MEMBERS
@@ -67,7 +67,7 @@ public class ContentProvider extends android.content.ContentProvider {
 			return cachedMimeType;
 		}
 
-		final Class<? extends Model> type = getModelType(uri);
+		final Class<? extends IModel> type = getModelType(uri);
 		final boolean single = ((match % 2) == 0);
 
 		StringBuilder mimeType = new StringBuilder();
@@ -92,7 +92,7 @@ public class ContentProvider extends android.content.ContentProvider {
 
 	@Override
 	public Uri insert(Uri uri, ContentValues values) {
-		final Class<? extends Model> type = getModelType(uri);
+		final Class<? extends IModel> type = getModelType(uri);
 		final Long id = Cache.openDatabase().insert(Cache.getTableName(type), null, values);
 
 		if (id != null && id > 0) {
@@ -107,7 +107,7 @@ public class ContentProvider extends android.content.ContentProvider {
 
 	@Override
 	public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-		final Class<? extends Model> type = getModelType(uri);
+		final Class<? extends IModel> type = getModelType(uri);
 		final int count = Cache.openDatabase().update(Cache.getTableName(type), values, selection, selectionArgs);
 
 		notifyChange(uri);
@@ -117,7 +117,7 @@ public class ContentProvider extends android.content.ContentProvider {
 
 	@Override
 	public int delete(Uri uri, String selection, String[] selectionArgs) {
-		final Class<? extends Model> type = getModelType(uri);
+		final Class<? extends IModel> type = getModelType(uri);
 		final int count = Cache.openDatabase().delete(Cache.getTableName(type), selection, selectionArgs);
 
 		notifyChange(uri);
@@ -127,7 +127,7 @@ public class ContentProvider extends android.content.ContentProvider {
 
 	@Override
 	public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-		final Class<? extends Model> type = getModelType(uri);
+		final Class<? extends IModel> type = getModelType(uri);
 		final Cursor cursor = Cache.openDatabase().query(
 				Cache.getTableName(type),
 				projection,
@@ -146,7 +146,7 @@ public class ContentProvider extends android.content.ContentProvider {
 	// PUBLIC METHODS
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	public static Uri createUri(Class<? extends Model> type, String id) {
+	public static Uri createUri(Class<? extends IModel> type, String id) {
 		final StringBuilder uri = new StringBuilder();
 		uri.append("content://");
 		uri.append(sAuthority);
@@ -177,7 +177,7 @@ public class ContentProvider extends android.content.ContentProvider {
 	// PRIVATE METHODS
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	private Class<? extends Model> getModelType(Uri uri) {
+	private Class<? extends IModel> getModelType(Uri uri) {
 		final int code = URI_MATCHER.match(uri);
 		if (code != UriMatcher.NO_MATCH) {
 			return TYPE_CODES.get(code);

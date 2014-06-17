@@ -17,12 +17,12 @@ package com.activeandroid.query;
  */
 
 import com.activeandroid.Cache;
-import com.activeandroid.Model;
+import com.activeandroid.IModel;
 
 public final class Update implements Sqlable {
-	private Class<? extends Model> mType;
+	private Class<? extends IModel> mType;
 
-	public Update(Class<? extends Model> table) {
+	public Update(Class<? extends IModel> table) {
 		mType = table;
 	}
 
@@ -34,7 +34,7 @@ public final class Update implements Sqlable {
 		return new Set(this, set, args);
 	}
 
-	Class<? extends Model> getType() {
+	Class<? extends IModel> getType() {
 		return mType;
 	}
 

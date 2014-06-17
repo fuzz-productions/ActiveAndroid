@@ -16,7 +16,7 @@ package com.activeandroid.test.query;
  * limitations under the License.
  */
 
-import com.activeandroid.Model;
+import com.activeandroid.IModel;
 import com.activeandroid.annotation.Table;
 import com.activeandroid.query.From;
 import com.activeandroid.query.Select;
@@ -157,10 +157,10 @@ public class FromTest extends SqlableTestCase {
 	}
 	
 	@Table(name = "JoinModel")
-	private static class JoinModel extends Model {
+	private static class JoinModel extends IModel {
 	}
 	
 	@Table(name = "JoinModel2")
-	private static class JoinModel2 extends Model {
+	private static class JoinModel2 extends IModel {
 	}
 }

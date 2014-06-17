@@ -20,7 +20,7 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.text.TextUtils;
 import com.activeandroid.Cache;
-import com.activeandroid.Model;
+import com.activeandroid.IModel;
 import com.activeandroid.query.Join.JoinType;
 import com.activeandroid.util.AALog;
 import com.activeandroid.util.SQLiteUtils;
@@ -32,7 +32,7 @@ import java.util.List;
 public final class From implements Sqlable {
 	private Sqlable mQueryBase;
 
-	private Class<? extends Model> mType;
+	private Class<? extends IModel> mType;
 	private String mAlias;
 	private List<Join> mJoins;
 	private String mWhere;
@@ -44,7 +44,7 @@ public final class From implements Sqlable {
 
 	private List<Object> mArguments;
 
-	public From(Class<? extends Model> table, Sqlable queryBase) {
+	public From(Class<? extends IModel> table, Sqlable queryBase) {
 		mType = table;
 		mJoins = new ArrayList<Join>();
 		mQueryBase = queryBase;
@@ -58,31 +58,31 @@ public final class From implements Sqlable {
 		return this;
 	}
 
-	public Join join(Class<? extends Model> table) {
+	public Join join(Class<? extends IModel> table) {
 		Join join = new Join(this, table, null);
 		mJoins.add(join);
 		return join;
 	}
 
-	public Join leftJoin(Class<? extends Model> table) {
+	public Join leftJoin(Class<? extends IModel> table) {
 		Join join = new Join(this, table, JoinType.LEFT);
 		mJoins.add(join);
 		return join;
 	}
 
-	public Join outerJoin(Class<? extends Model> table) {
+	public Join outerJoin(Class<? extends IModel> table) {
 		Join join = new Join(this, table, JoinType.OUTER);
 		mJoins.add(join);
 		return join;
 	}
 
-	public Join innerJoin(Class<? extends Model> table) {
+	public Join innerJoin(Class<? extends IModel> table) {
 		Join join = new Join(this, table, JoinType.INNER);
 		mJoins.add(join);
 		return join;
 	}
 
-	public Join crossJoin(Class<? extends Model> table) {
+	public Join crossJoin(Class<? extends IModel> table) {
 		Join join = new Join(this, table, JoinType.CROSS);
 		mJoins.add(join);
 		return join;
@@ -215,7 +215,7 @@ public final class From implements Sqlable {
         }
     }
 
-	public <T extends Model> List<T> execute() {
+	public <T extends IModel> List<T> execute() {
 		if (mQueryBase instanceof Select) {
 			return SQLiteUtils.rawQuery(mType, toSql(), getArguments());
 		}
@@ -233,7 +233,7 @@ public final class From implements Sqlable {
         return Cache.openDatabase().rawQuery(toSql(), getArguments());
     }
 
-	public <T extends Model> T executeSingle() {
+	public <T extends IModel> T executeSingle() {
 		if (mQueryBase instanceof Select) {
 			limit(1);
 			return SQLiteUtils.rawQuerySingle(mType, toSql(), getArguments());

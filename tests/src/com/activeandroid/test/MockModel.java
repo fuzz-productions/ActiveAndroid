@@ -16,9 +16,9 @@ package com.activeandroid.test;
  * limitations under the License.
  */
 
-import com.activeandroid.Model;
+import com.activeandroid.IModel;
 import com.activeandroid.annotation.Table;
 
 @Table(name = "MockModel")
-public class MockModel extends Model {
+public class MockModel extends IModel {
 }

@@ -34,7 +34,7 @@ public class Configuration {
 	private Context mContext;
 	private String mDatabaseName;
 	private int mDatabaseVersion;
-	private List<Class<? extends Model>> mModelClasses;
+	private List<Class<? extends IModel>> mModelClasses;
 	private List<Class<? extends TypeSerializer>> mTypeSerializers;
 	private int mCacheSize;
 
@@ -62,7 +62,7 @@ public class Configuration {
 		return mDatabaseVersion;
 	}
 
-	public List<Class<? extends Model>> getModelClasses() {
+	public List<Class<? extends IModel>> getModelClasses() {
 		return mModelClasses;
 	}
 
@@ -104,7 +104,7 @@ public class Configuration {
 		private Integer mCacheSize;
 		private String mDatabaseName;
 		private Integer mDatabaseVersion;
-		private List<Class<? extends Model>> mModelClasses;
+		private List<Class<? extends IModel>> mModelClasses;
 		private List<Class<? extends TypeSerializer>> mTypeSerializers;
 
 		//////////////////////////////////////////////////////////////////////////////////////
@@ -135,25 +135,25 @@ public class Configuration {
 			return this;
 		}
 
-		public Builder addModelClass(Class<? extends Model> modelClass) {
+		public Builder addModelClass(Class<? extends IModel> modelClass) {
 			if (mModelClasses == null) {
-				mModelClasses = new ArrayList<Class<? extends Model>>();
+				mModelClasses = new ArrayList<Class<? extends IModel>>();
 			}
 
 			mModelClasses.add(modelClass);
 			return this;
 		}
 
-		public Builder addModelClasses(Class<? extends Model>... modelClasses) {
+		public Builder addModelClasses(Class<? extends IModel>... modelClasses) {
 			if (mModelClasses == null) {
-				mModelClasses = new ArrayList<Class<? extends Model>>();
+				mModelClasses = new ArrayList<Class<? extends IModel>>();
 			}
 
 			mModelClasses.addAll(Arrays.asList(modelClasses));
 			return this;
 		}
 
-		public Builder setModelClasses(Class<? extends Model>... modelClasses) {
+		public Builder setModelClasses(Class<? extends IModel>... modelClasses) {
 			mModelClasses = Arrays.asList(modelClasses);
 			return this;
 		}
@@ -250,8 +250,8 @@ public class Configuration {
 			return aaVersion;
 		}
 
-		private List<Class<? extends Model>> loadModelList(String[] models) {
-			final List<Class<? extends Model>> modelClasses = new ArrayList<Class<? extends Model>>();
+		private List<Class<? extends IModel>> loadModelList(String[] models) {
+			final List<Class<? extends IModel>> modelClasses = new ArrayList<Class<? extends IModel>>();
 			final ClassLoader classLoader = mContext.getClass().getClassLoader();
 			for (String model : models) {
 				model = ensurePackageInName(model);

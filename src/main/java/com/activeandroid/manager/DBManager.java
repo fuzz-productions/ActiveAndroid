@@ -1,6 +1,6 @@
 package com.activeandroid.manager;
 
-import com.activeandroid.Model;
+import com.activeandroid.IModel;
 import com.activeandroid.interfaces.CollectionReceiver;
 import com.activeandroid.interfaces.ObjectReceiver;
 import com.activeandroid.runtime.DBRequest;
@@ -17,7 +17,7 @@ import java.util.List;
  *
  * @param <OBJECT_CLASS> - the class of objects that represent a Model from the DB
  */
-public abstract class DBManager<OBJECT_CLASS extends Model> extends SingleDBManager{
+public abstract class DBManager<OBJECT_CLASS extends IModel> extends SingleDBManager{
 
     protected Class<OBJECT_CLASS> mObjectClass;
 

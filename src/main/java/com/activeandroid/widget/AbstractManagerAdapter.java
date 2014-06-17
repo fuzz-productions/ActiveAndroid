@@ -3,7 +3,7 @@ package com.activeandroid.widget;
 import android.widget.BaseAdapter;
 
 import com.activeandroid.manager.DBManager;
-import com.activeandroid.Model;
+import com.activeandroid.IModel;
 import com.activeandroid.interfaces.CollectionReceiver;
 
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.List;
  * Contributors:
  * Description: Provides simple, type-safe implementation in an adapter, fetching objects from the DBManager
  */
-public abstract class AbstractManagerAdapter<OBJECT_CLASS extends Model> extends BaseAdapter {
+public abstract class AbstractManagerAdapter<OBJECT_CLASS extends IModel> extends BaseAdapter {
 
     protected List<OBJECT_CLASS> mObjects;
 

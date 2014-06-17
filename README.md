@@ -10,7 +10,7 @@ _ActiveAndroid On Steroids provides you with a completely thread-safe, priority-
 ## Documentation
 
 * [Getting started](http://github.com/agrosner/ActiveAndroid/wiki/Getting-started)
-* [Creating your database model](http://github.com/agrosner/ActiveAndroid/wiki/Creating-your-database-model)
+* [Creating your database IModel](http://github.com/agrosner/ActiveAndroid/wiki/Creating-your-database-IModel)
 * [Saving to the database](http://github.com/agrosner/ActiveAndroid/wiki/Saving-to-the-database)
 * [Querying the database](http://github.com/agrosner/ActiveAndroid/wiki/Querying-the-database)
 * [DB Managers] (http://github.com/agrosner/ActiveAndroid/wiki/DB-Managers)
