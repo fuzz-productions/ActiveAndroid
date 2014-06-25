@@ -588,8 +588,8 @@ public final class SQLiteUtils {
         }
     }
 
-    public static boolean exists(IModel model){
-        IModel model = new Select().from(getClass()).where(SQLiteUtils.getWhereStatement(model, Cache.getTableInfo(model.getClass()))).executeSingle();
+    public static boolean exists(IModel iModel){
+        IModel model = new Select().from(iModel.getClass()).where(SQLiteUtils.getWhereStatement(iModel, Cache.getTableInfo(iModel.getClass()))).executeSingle();
         return model!=null;
     }
 
