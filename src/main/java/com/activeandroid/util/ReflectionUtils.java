@@ -33,7 +33,7 @@ public final class ReflectionUtils {
 	//////////////////////////////////////////////////////////////////////////////////////
 
 	public static boolean isModel(Class<?> type) {
-		return isSubclassOf(type, IModel.class);
+		return IModel.class.isAssignableFrom(type);
 	}
 
 	public static boolean isTypeSerializer(Class<?> type) {

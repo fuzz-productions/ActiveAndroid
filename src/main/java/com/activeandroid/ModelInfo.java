@@ -18,6 +18,7 @@ package com.activeandroid;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -184,7 +185,10 @@ final class ModelInfo {
 
 			try {
 				Class<?> discoveredClass = Class.forName(className, false, classLoader);
-				if (ReflectionUtils.isModel(discoveredClass) && !discoveredClass.isAnnotationPresent(Ignore.class)) {
+				if (!Modifier.isAbstract(discoveredClass.getModifiers())
+                        && !discoveredClass.equals(IModel.class)
+                        && ReflectionUtils.isModel(discoveredClass)
+                        && !discoveredClass.isAnnotationPresent(Ignore.class)) {
 					@SuppressWarnings("unchecked")
 					Class<? extends IModel> modelClass = (Class<? extends IModel>) discoveredClass;
 					mTableInfos.put(modelClass, new TableInfo(modelClass));

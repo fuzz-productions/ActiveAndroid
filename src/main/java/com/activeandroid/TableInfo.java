@@ -62,7 +62,11 @@ public final class TableInfo {
 		List<Field> fields = new ArrayList<Field>();
         try {
             fields = ReflectionUtils.getAllFields(fields, Class.forName(type.getName()));
-            fields.add(getIdField(type));
+
+            Field id = getIdField(type);
+            if(id!=null) {
+                fields.add(id);
+            }
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
