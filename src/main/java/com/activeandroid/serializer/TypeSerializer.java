@@ -16,12 +16,12 @@ package com.activeandroid.serializer;
  * limitations under the License.
  */
 
-public abstract class TypeSerializer {
+public abstract class TypeSerializer<OBJECT_CLASS> {
 	public abstract Class<?> getDeserializedType();
 
 	public abstract Class<?> getSerializedType();
 
-	public abstract Object serialize(Object data);
+	public abstract Object serialize(OBJECT_CLASS data);
 
-	public abstract Object deserialize(Object data);
+	public abstract OBJECT_CLASS deserialize(Object data);
 }
