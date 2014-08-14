@@ -15,8 +15,8 @@ public class DBManagerRuntime {
 
     private static ArrayList<SingleDBManager> managers;
 
-    static ArrayList<SingleDBManager> getManagers(){
-        if(managers==null){
+    static ArrayList<SingleDBManager> getManagers() {
+        if (managers == null) {
             managers = new ArrayList<SingleDBManager>();
         }
         return managers;
@@ -25,9 +25,10 @@ public class DBManagerRuntime {
     /**
      * Quits all active DBManager queues
      */
-    public static void quit(){
-        for(SingleDBManager manager: getManagers()){
-            if(manager.hasOwnQueue()) {
+    public static void quit() {
+        ArrayList<SingleDBManager> dbManagers = getManagers();
+        for (SingleDBManager manager : dbManagers) {
+            if (manager.hasOwnQueue()) {
                 manager.getQueue().quit();
                 manager.disposeQueue();
             }
@@ -36,9 +37,15 @@ public class DBManagerRuntime {
         DBBatchSaveQueue.disposeSharedQueue();
     }
 
-    public static void restartManagers(){
-        for(SingleDBManager manager: getManagers()){
-            manager.checkQueue();
+    public static void restartManagers() {
+        ArrayList<SingleDBManager> dbManagers = getManagers();
+        for (SingleDBManager manager : dbManagers) {
+            manager.restart();
         }
+    }
+
+    static void addToQueue(SingleDBManager singleDBManager) {
+        ArrayList<SingleDBManager> dbManagers = getManagers();
+        dbManagers.add(singleDBManager);
     }
 }
