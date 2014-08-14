@@ -49,7 +49,7 @@ public class SingleDBManager {
         mName = name;
         hasOwnQueue = createNewQueue;
         checkThread();
-        DBManagerRuntime.addToQueue(this);
+        DBManagerRuntime.addManager(this);
         createNewQueue();
     }
 

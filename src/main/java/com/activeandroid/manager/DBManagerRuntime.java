@@ -44,7 +44,7 @@ public class DBManagerRuntime {
         }
     }
 
-    static void addToQueue(SingleDBManager singleDBManager) {
+    static void addManager(SingleDBManager singleDBManager) {
         ArrayList<SingleDBManager> dbManagers = getManagers();
         dbManagers.add(singleDBManager);
     }
