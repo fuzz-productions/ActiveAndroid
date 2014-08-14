@@ -18,7 +18,6 @@ package com.activeandroid;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.activeandroid.util.AALog;
@@ -26,6 +25,7 @@ import com.activeandroid.util.NaturalOrderComparator;
 import com.activeandroid.util.SQLiteUtils;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -61,8 +61,6 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
         executePragmas(db);
     }
 
-    ;
-
     @Override
     public void onCreate(SQLiteDatabase db) {
         executePragmas(db);
@@ -93,10 +91,11 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
         // Make sure we have a path to the file
         dbPath.getParentFile().mkdirs();
 
-        // Try to copy database file
+        InputStream inputStream = null;
+        OutputStream output = null;
         try {
-            final InputStream inputStream = context.getAssets().open(databaseName);
-            final OutputStream output = new FileOutputStream(dbPath);
+            inputStream = context.getAssets().open(databaseName);
+            output = new FileOutputStream(dbPath);
 
             byte[] buffer = new byte[1024];
             int length;
@@ -106,10 +105,22 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
             }
 
             output.flush();
-            output.close();
-            inputStream.close();
         } catch (IOException e) {
             AALog.e("Failed to open file", e);
+        } finally {
+            close(output);
+            close(inputStream);
+        }
+    }
+
+    private void close(Closeable stream) {
+        if (stream == null) {
+            return;
+        }
+        try {
+            stream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -170,21 +181,25 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     private void executeSqlScript(SQLiteDatabase db, String file) {
+        InputStream input = null;
         try {
-            final InputStream input = Cache.getContext().getAssets().open(MIGRATION_PATH + "/" + file);
+            input = Cache.getContext().getAssets().open(MIGRATION_PATH + "/" + file);
             final BufferedReader reader = new BufferedReader(new InputStreamReader(input));
             String line = null;
 
             while ((line = reader.readLine()) != null) {
-                try {
-                    db.execSQL(line.replace(";", ""));
-                } catch (SQLiteException ignored) {
-                    AALog.e("Failed to execute " + file, ignored);
-                }
-
+                db.execSQL(line.replace(";", ""));
             }
         } catch (IOException e) {
             AALog.e("Failed to execute " + file, e);
+        } finally {
+            try {
+                if (input != null) {
+                    input.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
