@@ -16,14 +16,14 @@ package com.activeandroid;
  * limitations under the License.
  */
 
-import java.util.Collection;
-
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.util.LruCache;
 
 import com.activeandroid.serializer.TypeSerializer;
 import com.activeandroid.util.AALog;
+
+import java.util.Collection;
 
 public final class Cache {
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -45,12 +45,27 @@ public final class Cache {
 
 	private static boolean sIsInitialized = false;
 
+
+    /**
+     * boolean to tell us whether a migration has successfully been executed
+     */
+    private static boolean migrationExecuted;
+
 	//////////////////////////////////////////////////////////////////////////////////////
 	// CONSTRUCTORS
 	//////////////////////////////////////////////////////////////////////////////////////
 
 	private Cache() {
 	}
+
+
+    public static boolean hasMigrationExecuted() {
+        return migrationExecuted;
+    }
+
+    public static void setMigrationExecuted(boolean executed) {
+        migrationExecuted = executed;
+    }
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// PUBLIC METHODS

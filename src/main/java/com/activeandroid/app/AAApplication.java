@@ -17,33 +17,42 @@ package com.activeandroid.app;
  */
 
 import com.activeandroid.ActiveAndroid;
+import com.activeandroid.Cache;
 import com.activeandroid.manager.DBManagerRuntime;
-import com.activeandroid.runtime.DBRequestQueue;
 
 public class AAApplication extends android.app.Application {
 
     private static boolean mDebug = false;
 
-	@Override
-	public void onCreate() {
-		super.onCreate();
-		ActiveAndroid.initialize(this);
-
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        ActiveAndroid.initialize(this);
         DBManagerRuntime.restartManagers();
-	}
+        if(Cache.hasMigrationExecuted()) {
+            onMigrationSuccessful();
+        }
+    }
 
-    public static void setDebugLogEnabled(boolean enabled){
+    public static void setDebugLogEnabled(boolean enabled) {
         mDebug = enabled;
     }
 
-    public static boolean isDebugEnabled(){
+    public static boolean isDebugEnabled() {
         return mDebug;
     }
-	
-	@Override
-	public void onTerminate() {
-		super.onTerminate();
 
-		ActiveAndroid.dispose();
-	}
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+
+        ActiveAndroid.dispose();
+    }
+
+    /**
+     * override this method to perform any special operations when a migration takes place
+     */
+    protected void onMigrationSuccessful() {
+
+    }
 }

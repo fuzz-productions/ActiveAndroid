@@ -1,23 +1,21 @@
 [![Build Status](https://travis-ci.org/pardom/ActiveAndroid.png?branch=master)](https://travis-ci.org/pardom/ActiveAndroid) [![Stories in Ready](https://badge.waffle.io/pardom/ActiveAndroid.png)](http://waffle.io/pardom/ActiveAndroid)  
-# ActiveAndroid On Steroids
+# ActiveAndroid
 
-ActiveAndroid On Steroids (a fork of ActiveAndroid) is an active record style ORM ([object relational mapper](http://en.wikipedia.org/wiki/Object-relational_mapping)). What does that mean exactly? Well, ActiveAndroid allows you to save and retrieve SQLite database records without ever writing a single SQL statement. Each database record is wrapped neatly into a class with methods like _save()_ and _delete()_.
+ActiveAndroid is an active record style ORM ([object relational mapper](http://en.wikipedia.org/wiki/Object-relational_mapping)). What does that mean exactly? Well, ActiveAndroid allows you to save and retrieve SQLite database records without ever writing a single SQL statement. Each database record is wrapped neatly into a class with methods like _save()_ and _delete()_.
 
-ActiveAndroid does so much more than this though (and now even more). Accessing the database is a hassle, to say the least, in Android. ActiveAndroid takes care of all the setup and messy stuff, and all with just a few simple steps of configuration. 
-
-_ActiveAndroid On Steroids provides you with a completely thread-safe, priority-based DBRequestQueue, code-crushing DBManagers, and some other surprises "Sprinkled" in._
+ActiveAndroid does so much more than this though. Accessing the database is a hassle, to say the least, in Android. ActiveAndroid takes care of all the setup and messy stuff, and all with just a few simple steps of configuration.
 
 ## Documentation
 
-* [Getting started](http://github.com/agrosner/ActiveAndroid/wiki/Getting-started)
-* [Creating your database IModel](http://github.com/agrosner/ActiveAndroid/wiki/Creating-your-database-Model)
-* [Saving to the database](http://github.com/agrosner/ActiveAndroid/wiki/Saving-to-the-database)
-* [Querying the database](http://github.com/agrosner/ActiveAndroid/wiki/Querying-the-database)
-* [DB Managers] (http://github.com/agrosner/ActiveAndroid/wiki/DB-Managers)
-* [Type serializers](http://github.com/agrosner/ActiveAndroid/wiki/Type-serializers)
-* [Using the content provider](http://github.com/agrosner/ActiveAndroid/wiki/Using-the-content-provider)
-* [Schema migrations](http://github.com/agrosner/ActiveAndroid/wiki/Schema-migrations)
-* [Pre-populated-databases](http://github.com/agrosner/ActiveAndroid/wiki/Pre-populated-databases)
+* [Getting started](http://github.com/pardom/ActiveAndroid/wiki/Getting-started)
+* [Creating your database model](http://github.com/pardom/ActiveAndroid/wiki/Creating-your-database-model)
+* [Saving to the database](http://github.com/pardom/ActiveAndroid/wiki/Saving-to-the-database)
+* [Querying the database](http://github.com/pardom/ActiveAndroid/wiki/Querying-the-database)
+* [Type serializers](http://github.com/pardom/ActiveAndroid/wiki/Type-serializers)
+* [Using the content provider](http://github.com/pardom/ActiveAndroid/wiki/Using-the-content-provider)
+* [Schema migrations](http://github.com/pardom/ActiveAndroid/wiki/Schema-migrations)
+* [Pre-populated-databases](http://github.com/pardom/ActiveAndroid/wiki/Pre-populated-databases)
+* [Running the Test Suite](https://github.com/pardom/ActiveAndroid/wiki/Running-the-Test-Suite)
 
 ## License
 
@@ -39,16 +37,13 @@ _ActiveAndroid On Steroids provides you with a completely thread-safe, priority-
 
 ## Contributing
 
-Please fork this repository and contribute back using [pull requests](http://github.com/agrosner/ActiveAndroid/pulls).
+Please fork this repository and contribute back using [pull requests](http://github.com/pardom/ActiveAndroid/pulls).
 
-Any requests will be happily looked at and contributors will be recognized here:
+Any contributions, large or small, major features, bug fixes, unit tests are welcomed and appreciated but will be thoroughly reviewed and discussed.
 
-_Be the first!_
+You can run the test suite by following the instructions on the [Running the Test Suite](https://github.com/pardom/ActiveAndroid/wiki/Running-the-Test-Suite) Wiki page.
 
-## Original Author
+
+## Author
 
 Michael Pardo | www.michaelpardo.com | www.activeandroid.com
-
-## ActiveAndroid On Steroids Author
-
-Andrew Grosner | andrew@fuzzproductions.com
