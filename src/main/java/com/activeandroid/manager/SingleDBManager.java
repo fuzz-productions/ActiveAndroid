@@ -49,8 +49,8 @@ public class SingleDBManager {
         mName = name;
         hasOwnQueue = createNewQueue;
         checkThread();
-        DBManagerRuntime.addManager(this);
-        createNewQueue();
+        DBManagerRuntime.getManagers().add(this);
+        checkQueue();
     }
 
     /**
@@ -67,32 +67,12 @@ public class SingleDBManager {
     }
 
     void checkQueue() {
-        final DBRequestQueue dbRequestQueue = getQueue();
-        if (!dbRequestQueue.isAlive()) {
-            dbRequestQueue.start();
+        if (!getQueue().isAlive()) {
+            getQueue().start();
         }
-        final DBBatchSaveQueue saveQueue = getSaveQueue();
-        if (!saveQueue.isAlive()) {
-            saveQueue.start();
+        if (!getSaveQueue().isAlive()) {
+            getSaveQueue().start();
         }
-    }
-
-    void restart() {
-        final DBRequestQueue dbRequestQueue = getQueue();
-        if (dbRequestQueue.isAlive() && !dbRequestQueue.isInterrupted()) {
-            dbRequestQueue.quit();
-        }
-        createNewQueue();
-        mQueue.start();
-    }
-
-    private DBRequestQueue createNewQueue() {
-        if (hasOwnQueue) {
-            mQueue = new DBRequestQueue(mName);
-        } else {
-            mQueue = SingleDBManager.getSharedInstance().createNewQueue();
-        }
-        return mQueue;
     }
 
     public boolean hasOwnQueue() {
@@ -108,7 +88,11 @@ public class SingleDBManager {
 
     public DBRequestQueue getQueue() {
         if (mQueue == null) {
-            createNewQueue();
+            if (hasOwnQueue) {
+                mQueue = new DBRequestQueue(mName);
+            } else {
+                mQueue = SingleDBManager.getSharedInstance().getQueue();
+            }
         }
         return mQueue;
     }

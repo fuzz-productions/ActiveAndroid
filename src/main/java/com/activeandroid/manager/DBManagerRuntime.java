@@ -30,8 +30,8 @@ public class DBManagerRuntime {
         for (SingleDBManager manager : dbManagers) {
             if (manager.hasOwnQueue()) {
                 manager.getQueue().quit();
-                manager.disposeQueue();
             }
+            manager.disposeQueue();
         }
         DBBatchSaveQueue.getSharedSaveQueue().quit();
         DBBatchSaveQueue.disposeSharedQueue();
