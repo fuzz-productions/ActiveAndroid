@@ -26,18 +26,18 @@ public class DBManagerRuntime {
      * Quits all active DBManager queues
      */
     public static void quit() {
-        for(SingleDBManager manager: getManagers()){
+        for (SingleDBManager manager : getManagers()) {
             if (manager.hasOwnQueue()) {
                 manager.getQueue().quit();
+            }
             manager.disposeQueue();
-        }
         }
         DBBatchSaveQueue.getSharedSaveQueue().quit();
         DBBatchSaveQueue.disposeSharedQueue();
     }
 
     public static void restartManagers() {
-        for(SingleDBManager manager: getManagers()){
+        for (SingleDBManager manager : getManagers()) {
             manager.checkQueue();
         }
     }
