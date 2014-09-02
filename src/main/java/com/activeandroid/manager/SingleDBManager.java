@@ -49,7 +49,6 @@ public class SingleDBManager {
     public SingleDBManager(String name, boolean createNewQueue) {
         mName = name;
         hasOwnQueue = createNewQueue;
-        checkThread();
         DBManagerRuntime.getManagers().add(this);
         checkQueue();
     }
