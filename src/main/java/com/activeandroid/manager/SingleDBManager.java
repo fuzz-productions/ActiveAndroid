@@ -2,6 +2,7 @@ package com.activeandroid.manager;
 
 import android.database.DatabaseUtils;
 import android.os.Handler;
+import android.os.Looper;
 
 import com.activeandroid.ActiveAndroid;
 import com.activeandroid.Cache;
@@ -113,7 +114,7 @@ public class SingleDBManager {
     /**
      * Runs all of the UI threaded requests
      */
-    protected Handler mRequestHandler = new Handler();
+    protected Handler mRequestHandler = new Handler(Looper.getMainLooper());
 
     /**
      * Runs a request from the DB in the request queue
