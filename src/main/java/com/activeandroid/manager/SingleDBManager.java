@@ -17,6 +17,7 @@ import com.activeandroid.runtime.DBBatchSaveQueue;
 import com.activeandroid.runtime.DBRequest;
 import com.activeandroid.runtime.DBRequestInfo;
 import com.activeandroid.runtime.DBRequestQueue;
+import com.activeandroid.util.AALog;
 import com.activeandroid.util.SQLiteUtils;
 
 import java.util.ArrayList;
@@ -345,6 +346,23 @@ public class SingleDBManager {
      */
     public <OBJECT_CLASS extends IModel> OBJECT_CLASS getObjectById(final Class<OBJECT_CLASS> obClazz, Object... ids) {
         return new Select().from(obClazz).where(SQLiteUtils.getWhereStatement(obClazz, Cache.getTableInfo(obClazz)), ids).executeSingle();
+    }
+
+    /**
+     * Provide the column names and the values to get the objects
+     * @param obClazz
+     * @param columnNames
+     * @param values
+     * @param <OBJECT_CLASS>
+     * @return
+     */
+    public <OBJECT_CLASS extends IModel> OBJECT_CLASS getObjectById(final Class<OBJECT_CLASS> obClazz, String[] columnNames, Object[] values) {
+        if(columnNames.length != values.length) {
+            if(AALog.isEnabled()) {
+                throw new RuntimeException("Number of ColumnNames cannot be different from the number of ids passed!");
+            }
+        }
+        return new Select().from(obClazz).where(SQLiteUtils.getWhereStatement(obClazz, Cache.getTableInfo(obClazz), columnNames), values).executeSingle();
     }
 
     /**

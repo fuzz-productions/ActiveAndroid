@@ -289,6 +289,39 @@ public final class SQLiteUtils {
         return sql;
     }
 
+    public static String getWhereStatement(Class<? extends IModel> modelClass, TableInfo tableInfo, String... primaryKeyColumnNames) {
+        List<Field> fields = new ArrayList<Field>();
+        List<String> primaryColumns = new ArrayList<String>();
+        fields = ReflectionUtils.getAllFields(fields, modelClass);
+
+        for(Field field : fields){
+            if(field.isAnnotationPresent(PrimaryKey.class)){
+                primaryColumns.add(tableInfo.getColumnName(field));
+            }
+        }
+
+        final StringBuilder where = new StringBuilder();
+        for(int i = 0 ; i < primaryKeyColumnNames.length; i++){
+            final String columnName = primaryKeyColumnNames[i];
+            if(primaryColumns.contains(columnName)) {
+                where.append(columnName);
+                where.append("=?");
+            } else {
+                if(AALog.isEnabled()) {
+                    throw new RuntimeException("Column " + columnName + " does not exist in table " + modelClass.getName());
+                }
+            }
+            if(i < primaryKeyColumnNames.length-1){
+                where.append(" AND ");
+            }
+        }
+
+        final String sql = where.toString();
+
+        return sql;
+    }
+
+
     /**
      * Returns the where statement with primary keys and values filled in
      * @param IModel
