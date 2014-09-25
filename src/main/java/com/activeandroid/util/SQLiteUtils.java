@@ -28,6 +28,7 @@ import com.activeandroid.IModel;
 import com.activeandroid.TableInfo;
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.ForeignKey;
+import com.activeandroid.annotation.IndexedKey;
 import com.activeandroid.annotation.PrimaryKey;
 import com.activeandroid.content.ContentProvider;
 import com.activeandroid.exception.PrimaryKeyCannotBeNullException;
@@ -268,7 +269,9 @@ public final class SQLiteUtils {
         fields = ReflectionUtils.getAllFields(fields, modelClass);
 
         for(Field field : fields){
-            if(field.isAnnotationPresent(PrimaryKey.class)){
+            if(field.isAnnotationPresent(PrimaryKey.class)
+                    && !field.isAnnotationPresent(IndexedKey.class)
+                    ){
                 primaryColumn.add(field);
             }
         }
@@ -295,7 +298,9 @@ public final class SQLiteUtils {
         fields = ReflectionUtils.getAllFields(fields, modelClass);
 
         for(Field field : fields){
-            if(field.isAnnotationPresent(PrimaryKey.class)){
+            if(field.isAnnotationPresent(PrimaryKey.class)
+                    && !field.isAnnotationPresent(IndexedKey.class)
+                    ){
                 primaryColumns.add(tableInfo.getColumnName(field));
             }
         }
@@ -334,7 +339,9 @@ public final class SQLiteUtils {
         fields = ReflectionUtils.getAllFields(fields, IModel.getClass());
 
         for(Field field : fields){
-            if(field.isAnnotationPresent(PrimaryKey.class)){
+            if(field.isAnnotationPresent(PrimaryKey.class)
+                    && !field.isAnnotationPresent(IndexedKey.class)
+                    ){
                 primaryColumn.add(field);
             }
         }
