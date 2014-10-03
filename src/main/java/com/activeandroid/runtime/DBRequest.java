@@ -57,7 +57,7 @@ public abstract class DBRequest implements Comparable<DBRequest>, Runnable {
 
     @Override
     public int compareTo(DBRequest another) {
-        return (int) ( mInfo.getStartTime() - another.mInfo.getStartTime());
+        return ( another.mInfo.getPriority() - mInfo.getPriority());
     }
 
     public String getName() {
