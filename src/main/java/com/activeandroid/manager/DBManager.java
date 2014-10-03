@@ -58,7 +58,7 @@ public abstract class DBManager<OBJECT_CLASS extends IModel> extends SingleDBMan
      *
      * @param object
      */
-    public OBJECT_CLASS add(Object object) {
+    protected OBJECT_CLASS add(Object object) {
         return add(mObjectClass, object);
     }
 

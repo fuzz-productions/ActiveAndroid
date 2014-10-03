@@ -23,9 +23,9 @@ public class DBBatchSaveQueue extends Thread{
     /**
      *  Once the queue size reaches 50 or larger, the thread will be interrupted and we will batch save the models.
      */
-    private static final int sMODEL_SAVE_SIZE = 50;
+    private static final int sMODEL_SAVE_SIZE = 15;
 
-    private boolean mQuit = false;
+    private volatile boolean mQuit = false;
 
     public static DBBatchSaveQueue getSharedSaveQueue(){
         if(mBatchSaveQueue==null){
@@ -50,7 +50,7 @@ public class DBBatchSaveQueue extends Thread{
     public void run() {
         super.run();
         Looper.prepare();
-        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_LOWEST);
         while (true){
             final ArrayList<IModel> tmpModels;
             synchronized (mModels){
@@ -59,7 +59,7 @@ public class DBBatchSaveQueue extends Thread{
             }
             if(tmpModels.size()>0) {
                 //run this on the DBManager thread
-                SingleDBManager.getSharedInstance().getQueue().add(new DBRequest(DBRequestInfo.create("Batch Saving")) {
+                SingleDBManager.getWriteQueue().add(new DBRequest(DBRequestInfo.create("Batch Saving")) {
                     @Override
                     public void run() {
                         long time = System.currentTimeMillis();

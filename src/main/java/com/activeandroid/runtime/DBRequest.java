@@ -1,7 +1,5 @@
 package com.activeandroid.runtime;
 
-import java.util.UUID;
-
 /**
  * Created by andrewgrosner
  * Date: 12/11/13
@@ -16,7 +14,7 @@ import java.util.UUID;
  *  For the bulk of data requests, use PRIORITY_NORMAL
  *  For any request that's non-essential use PRIORITY_LOW
  */
-public abstract class DBRequest implements Comparable<DBRequest> {
+public abstract class DBRequest implements Comparable<DBRequest>, Runnable {
 
     /**
      * Low priority requests, reserved for non-essential tasks
@@ -40,9 +38,7 @@ public abstract class DBRequest implements Comparable<DBRequest> {
      */
     public static int PRIORITY_UI = 5;
 
-    public abstract void run();
-
-    private DBRequestInfo mInfo;
+    protected DBRequestInfo mInfo;
 
     /**
      * Constructs this class using the specified DBRequest info
@@ -61,10 +57,15 @@ public abstract class DBRequest implements Comparable<DBRequest> {
 
     @Override
     public int compareTo(DBRequest another) {
-        return another.mInfo.getPriority() - mInfo.getPriority();
+        return (int) ( mInfo.getStartTime() - another.mInfo.getStartTime());
     }
 
     public String getName() {
         return mInfo.getName();
     }
+
+    public DBRequestInfo getInfo() {
+        return mInfo;
+    }
+
 }

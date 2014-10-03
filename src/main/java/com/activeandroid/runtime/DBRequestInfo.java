@@ -1,5 +1,6 @@
 package com.activeandroid.runtime;
 
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -11,6 +12,8 @@ import java.util.UUID;
 public class DBRequestInfo {
 
     private String name;
+
+    private long startTime;
 
     private int priority;
 
@@ -27,6 +30,7 @@ public class DBRequestInfo {
         DBRequestInfo requestInfo = new DBRequestInfo();
         requestInfo.name = name;
         requestInfo.priority = priority;
+        requestInfo.startTime = new Date().getTime();
         return requestInfo;
     }
 
@@ -38,7 +42,8 @@ public class DBRequestInfo {
     public static DBRequestInfo create(String name){
         DBRequestInfo requestInfo = new DBRequestInfo();
         requestInfo.name = name;
-        requestInfo.priority = DBRequest.PRIORITY_NORMAL;
+        requestInfo.priority = DBRequest.PRIORITY_LOW;
+        requestInfo.startTime = new Date().getTime();
         return requestInfo;
     }
 
@@ -51,6 +56,7 @@ public class DBRequestInfo {
         DBRequestInfo requestInfo = new DBRequestInfo();
         requestInfo.name = UUID.randomUUID().toString();
         requestInfo.priority = priority;
+        requestInfo.startTime = new Date().getTime();
         return requestInfo;
     }
 
@@ -63,6 +69,7 @@ public class DBRequestInfo {
         DBRequestInfo requestInfo = new DBRequestInfo();
         requestInfo.name = UUID.randomUUID().toString();
         requestInfo.priority = DBRequest.PRIORITY_LOW;
+        requestInfo.startTime = new Date().getTime();
         return requestInfo;
     }
 
@@ -74,6 +81,7 @@ public class DBRequestInfo {
         DBRequestInfo requestInfo = new DBRequestInfo();
         requestInfo.priority = DBRequest.PRIORITY_UI;
         requestInfo.name = "fetch " + UUID.randomUUID().toString();
+        requestInfo.startTime = new Date().getTime();
         return requestInfo;
     }
 
@@ -85,5 +93,9 @@ public class DBRequestInfo {
 
     public int getPriority() {
         return priority;
+    }
+
+    public long getStartTime() {
+        return startTime;
     }
 }

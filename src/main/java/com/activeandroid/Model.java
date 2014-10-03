@@ -64,7 +64,7 @@ public abstract class Model implements IModel{
 
 	public final void delete() {
 		Cache.openDatabase().delete(mTableInfo.getTableName(), SQLiteUtils.getWhereStatement(this, mTableInfo), null);
-		Cache.removeEntity(this);
+        Cache.removeEntity(this);
 
 		Cache.getContext().getContentResolver()
 				.notifyChange(ContentProvider.createUri(mTableInfo.getType(), getId()), null);
@@ -155,6 +155,7 @@ public abstract class Model implements IModel{
 		}
 
         if(!exists()){
+            AALog.v("ActiveAndroid","INSERT " + mTableInfo.getTableName() + values);
 		     mId = db.insert(mTableInfo.getTableName(), null, values);
 
             for(Field field : mTableInfo.getPrimaryKeys()){
@@ -169,6 +170,7 @@ public abstract class Model implements IModel{
                 }
             }
         } else {
+            AALog.v("ActiveAndroid","UPDATE " + mTableInfo.getTableName() + values);
 			mId = db.update(mTableInfo.getTableName(), values, SQLiteUtils.getWhereStatement(this, mTableInfo), null);
 		}
 

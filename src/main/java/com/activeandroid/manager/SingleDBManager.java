@@ -37,6 +37,7 @@ public class SingleDBManager {
     private static SingleDBManager manager;
 
     private DBRequestQueue mQueue;
+    private static DBRequestQueue mWriteQueue;
 
     private String mName;
 
@@ -98,6 +99,13 @@ public class SingleDBManager {
         return mQueue;
     }
 
+    public synchronized static DBRequestQueue getWriteQueue() {
+        if (mWriteQueue == null) {
+            mWriteQueue = new DBRequestQueue("Universal Write Queue",1);
+        }
+        return mWriteQueue;
+    }
+
     public DBBatchSaveQueue getSaveQueue() {
         return DBBatchSaveQueue.getSharedSaveQueue();
     }
@@ -143,7 +151,7 @@ public class SingleDBManager {
      *
      * @param inObject - object of the class defined by the manager
      */
-    public <OBJECT_CLASS extends IModel> OBJECT_CLASS add(OBJECT_CLASS inObject) {
+    protected <OBJECT_CLASS extends IModel> OBJECT_CLASS add(OBJECT_CLASS inObject) {
         inObject.save();
         return inObject;
     }
@@ -153,7 +161,7 @@ public class SingleDBManager {
      *
      * @param object
      */
-    public <OBJECT_CLASS extends IModel> OBJECT_CLASS add(Class<OBJECT_CLASS> obClazz, Object object) {
+    protected <OBJECT_CLASS extends IModel> OBJECT_CLASS add(Class<OBJECT_CLASS> obClazz, Object object) {
         try {
             return add(getObject(obClazz, object));
         } catch (Throwable e) {
