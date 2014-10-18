@@ -98,6 +98,7 @@ public class DBRequestQueue {
             _task.run();
             AALog.v(TAG, "Write Finish Time " + (System.currentTimeMillis() - start));
             latch.release();
+            _task = null;
         }
 
         @Override
@@ -155,6 +156,7 @@ public class DBRequestQueue {
             _task.run();
             AALog.v(TAG, "Read Finish Time " + (System.currentTimeMillis() - start));
             latch.release();
+            _task = null;
         }
 
 
